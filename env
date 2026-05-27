@@ -1,0 +1,35 @@
+# NEXA STREAK MASTER - Environment Variables
+
+# API Configuration
+API_KEY=aaffc4c43b7d54b8d16ca3a956543380
+FOOTBALL_API_URL=https://api.api-football.com/v3
+
+# Server
+PORT=3000
+NODE_ENV=production
+
+# Rate Limiting
+RATE_LIMIT_PER_MINUTE=300
+
+# Cache
+CACHE_TTL=600
+
+# Database (optional - for future user data)
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_NAME=streak_master
+
+# Email (optional - for notifications)
+EMAIL_SERVICE=gmail
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
+
+# JWT (optional - for authentication)
+JWT_SECRET=your_secret_key_here
+
+# Firebase (optional - for real leaderboard)
+FIREBASE_API_KEY=your_firebase_key
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_DATABASE_URL=your_database_url

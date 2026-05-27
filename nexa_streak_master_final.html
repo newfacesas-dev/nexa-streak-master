@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXA STREAK MASTER</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(135deg, #0a0e27 0%, #0d1138 100%); color: white; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; padding-bottom: 140px; }
+        .header { margin-bottom: 40px; }
+        .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
+        .logo-x { background: linear-gradient(90deg, #39ff14 0%, #00ff00 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 32px; font-weight: 900; border: 2px solid #39ff14; padding: 4px 8px; border-radius: 4px; }
+        .logo-text { color: white; font-size: 16px; font-weight: 900; letter-spacing: 1px; }
+        .header-title h1 { font-size: 42px; font-weight: 900; margin-bottom: 15px; }
+        .header-subtitle { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+        .stat-card { background: rgba(20, 30, 70, 0.6); border: 1px solid rgba(57, 255, 20, 0.3); border-radius: 10px; padding: 20px; text-align: center; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 900; color: #39ff14; }
+        .match-card { background: rgba(20, 30, 70, 0.8); border: 2px solid rgba(57, 255, 20, 0.4); border-radius: 12px; padding: 24px; margin-bottom: 20px; cursor: pointer; transition: all 0.3s; }
+        .match-card:hover { border-color: #39ff14; transform: translateY(-4px); }
+        .match-score { font-size: 36px; font-weight: 900; color: #39ff14; text-align: center; margin: 20px 0; }
+        .player-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+        .player-btn { background: rgba(57, 255, 20, 0.1); border: 1px solid rgba(57, 255, 20, 0.3); color: #39ff14; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .player-btn:hover { background: rgba(57, 255, 20, 0.2); border-color: #39ff14; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 2000; justify-content: center; align-items: center; overflow-y: auto; }
+        .modal.active { display: flex; }
+        .modal-content { background: rgba(20, 30, 70, 0.95); border: 2px solid rgba(57, 255, 20, 0.4); border-radius: 12px; padding: 30px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 28px; cursor: pointer; color: #39ff14; }
+        .player-name { font-size: 20px; font-weight: 900; color: #39ff14; margin-bottom: 20px; }
+        .stats-section { background: rgba(57, 255, 20, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .stats-title { font-size: 12px; font-weight: 700; color: #39ff14; text-transform: uppercase; margin-bottom: 12px; }
+        .stats-grid-modal { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .stat-item { background: rgba(57, 255, 20, 0.05); padding: 10px; border-radius: 6px; border-left: 3px solid #39ff14; }
+        .stat-item-label { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        .stat-item-value { font-size: 16px; font-weight: 700; color: #39ff14; }
+        .history-item { background: rgba(57, 255, 20, 0.05); padding: 8px; border-radius: 4px; font-size: 11px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .goal { color: #39ff14; font-weight: 700; }
+        .no-goal { color: #ff6666; font-weight: 700; }
+        .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 14, 39, 0.98); border-top: 2px solid rgba(57, 255, 20, 0.3); padding: 12px 0; z-index: 1000; }
+        .navbar-content { display: flex; justify-content: space-around; max-width: 1200px; margin: 0 auto; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: #666; padding: 8px 16px; transition: all 0.3s; }
+        .nav-item.active { color: #39ff14; }
+        .nav-icon { font-size: 24px; }
+        .nav-label { font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .btn-confirm { background: linear-gradient(90deg, #39ff14 0%, #00ff00 100%); color: #000; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 20px; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <span class="logo-x">[X]</span>
+                <div><div class="logo-text">STREAK MASTER</div><div style="font-size:10px;color:#888;">powered by NEXA</div></div>
+            </div>
+            <div class="header-title"><h1>ANTICIPA<br>DECIDI<br>VINCI</h1></div>
+            <div class="header-subtitle">🔴 NEXA ARENA | LIVE DATA</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">Streak</div><div class="stat-value" id="stat-streak">12</div></div>
+            <div class="stat-card"><div class="stat-label">Punti</div><div class="stat-value" id="stat-points">485</div></div>
+            <div class="stat-card"><div class="stat-label">Sfide 1v1</div><div class="stat-value" id="stat-sfide">3</div></div>
+            <div class="stat-card"><div class="stat-label">Win %</div><div class="stat-value" id="stat-win">67%</div></div>
+        </div>
+
+        <div id="matches-container"></div>
+    </div>
+
+    <div class="modal" id="playerModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div id="modal-body"></div>
+            <button class="btn-confirm" onclick="selectPlayer()">✅ CONFERMA SCELTA</button>
+            <button class="btn-confirm" style="background: rgba(255, 100, 100, 0.3); color: #ff9999; margin-top: 10px;" onclick="closeModal()">← TORNA INDIETRO</button>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="nav-item active" onclick="switchPage('live')"><div class="nav-icon">⚽</div><div class="nav-label">LIVE</div></div>
+            <div class="nav-item" onclick="switchPage('sfide')"><div class="nav-icon">🎮</div><div class="nav-label">SFIDE</div></div>
+            <div class="nav-item" onclick="switchPage('classifica')"><div class="nav-icon">🏆</div><div class="nav-label">CLASSIFICA</div></div>
+            <div class="nav-item" onclick="switchPage('profilo')"><div class="nav-icon">👤</div><div class="nav-label">PROFILO</div></div>
+        </div>
+    </nav>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:3000';
+        let selectedPlayer = null;
+        let gameState = { streak: 12, points: 485, sfide: 3, win: 67 };
+
+        async function loadMatches() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/matches/live`);
+                const matches = await response.json();
+                
+                const container = document.getElementById('matches-container');
+                if (!matches || matches.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #39ff14;">Nessuna partita LIVE al momento</div>';
+                    return;
+                }
+                
+                container.innerHTML = matches.map(m => `
+                    <div class="match-card">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 10px;">${m.league.name}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div style="text-align: center; flex: 1;">${m.home.name}</div>
+                            <div class="match-score">${m.home.goals}-${m.away.goals}</div>
+                            <div style="text-align: center; flex: 1;">${m.away.name}</div>
+                        </div>
+                        <div style="font-size: 11px; color: #888; text-align: center; margin-bottom: 15px;">🔴 LIVE ${m.minute}'</div>
+                        <div style="font-size: 11px; font-weight: 700; color: #39ff14; margin-bottom: 10px;">👤 SCEGLI MARCATORE</div>
+                        <div class="player-grid">
+                            <button class="player-btn" onclick="openModal('${m.home.name} P1', ${m.id})">
+                                ${m.home.name}<br>P1
+                            </button>
+                            <button class="player-btn" onclick="openModal('${m.home.name} P2', ${m.id})">
+                                ${m.home.name}<br>P2
+                            </button>
+                            <button class="player-btn" onclick="openModal('${m.away.name} P1', ${m.id})">
+                                ${m.away.name}<br>P1
+                            </button>
+                            <button class="player-btn" onclick="openModal('${m.away.name} P2', ${m.id})">
+                                ${m.away.name}<br>P2
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Errore:', error);
+            }
+        }
+
+        function openModal(playerName, matchId) {
+            selectedPlayer = { name: playerName, match: matchId };
+            
+            const p = {
+                forma: Math.floor(Math.random() * 3 + 7),
+                goli: Math.floor(Math.random() * 20 + 5),
+                assist: Math.floor(Math.random() * 10 + 2),
+                minuti: Math.floor(Math.random() * 1500 + 500),
+                probabilita: Math.floor(Math.random() * 30 + 50),
+                risk: ['LOW', 'MEDIUM', 'HIGH'][Math.floor(Math.random() * 3)],
+                rating: (Math.random() * 2 + 7).toFixed(1),
+                duelli: Math.floor(Math.random() * 50 + 80),
+                passaggi: Math.floor(Math.random() * 30 + 20),
+                velocita: (Math.random() * 5 + 30).toFixed(1),
+                posizionamento: (Math.random() * 2 + 8).toFixed(1),
+                over05: (Math.random() * 0.5 + 1.8).toFixed(2),
+                siNo: (Math.random() * 0.3 + 1.2).toFixed(2),
+                suggerimento: ['BASSO', 'MEDIO', 'ALTO'][Math.floor(Math.random() * 3)]
+            };
+            
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = `
+                <div class="player-name">${playerName}</div>
+                
+                <div class="stats-section">
+                    <div class="stats-title">📊 VALUTAZIONE PROBABILITÀ</div>
+                    <div class="stats-grid-modal">
+                        <div class="stat-item">
+                            <div class="stat-item-label">Probabilità GOL</div>
+                            <div class="stat-item-value">${p.probabilita}%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Risk Level</div>
+                            <div class="stat-item-value" style="color: ${p.risk === 'LOW' ? '#39ff14' : p.risk === 'MEDIUM' ? '#ffff00' : '#ff6666'};">${p.risk}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Rating</div>
+                            <div class="stat-item-value">${p.rating}/10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Forma</div>
+                            <div class="stat-item-value">${p.forma}/10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stats-title">⚽ STATISTICHE STAGIONE</div>
+                    <div class="stats-grid-modal">
+                        <div class="stat-item">
+                            <div class="stat-item-label">Goli</div>
+                            <div class="stat-item-value">${p.goli}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Assist</div>
+                            <div class="stat-item-value">${p.assist}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Minuti</div>
+                            <div class="stat-item-value">${p.minuti}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Duelli</div>
+                            <div class="stat-item-value">${p.duelli}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Passaggi Chiave</div>
+                            <div class="stat-item-value">${p.passaggi}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Velocità</div>
+                            <div class="stat-item-value">${p.velocita} km/h</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">Posizionamento</div>
+                            <div class="stat-item-value">${p.posizionamento}/10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stats-title">💰 QUOTE BETTING</div>
+                    <div class="stats-grid-modal">
+                        <div class="stat-item">
+                            <div class="stat-item-label">Over 0.5 GOL</div>
+                            <div class="stat-item-value">${p.over05}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-label">SÌ/NO</div>
+                            <div class="stat-item-value">${p.siNo}</div>
+                        </div>
+                        <div class="stat-item" style="grid-column: 1 / -1;">
+                            <div class="stat-item-label">Consiglio Scommessa</div>
+                            <div class="stat-item-value">${p.suggerimento}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stats-title">📜 STORICO ULTIMI 5 MATCH</div>
+                    <div class="history-item"><span>2026-05-20 vs Team A</span><span class="goal">⚽ GOL</span></div>
+                    <div class="history-item"><span>2026-05-15 vs Team B</span><span class="goal">⚽ GOL</span></div>
+                    <div class="history-item"><span>2026-05-10 vs Team C</span><span class="no-goal">❌ SBAGLIATO</span></div>
+                    <div class="history-item"><span>2026-05-05 vs Team D</span><span class="goal">⚽ GOL</span></div>
+                    <div class="history-item"><span>2026-04-30 vs Team E</span><span class="goal">⚽ GOL</span></div>
+                </div>
+            `;
+
+            document.getElementById('playerModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('playerModal').classList.remove('active');
+        }
+
+        function selectPlayer() {
+            if (!selectedPlayer) return;
+            const won = Math.random() > 0.5;
+            if (won) {
+                gameState.points += 15;
+                gameState.streak++;
+                alert(`✅ HA SEGNATO!\n${selectedPlayer.name}\n+15 PUNTI 🚀`);
+            } else {
+                gameState.streak = 0;
+                alert(`❌ NON HA SEGNATO!\n${selectedPlayer.name}\nStreak azzerato.`);
+            }
+            document.getElementById('stat-streak').textContent = gameState.streak;
+            document.getElementById('stat-points').textContent = gameState.points;
+            closeModal();
+        }
+
+        function switchPage(page) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            const container = document.getElementById('matches-container');
+            
+            switch(page) {
+                case 'live':
+                    loadMatches();
+                    break;
+                case 'sfide':
+                    container.innerHTML = `<div style="text-align: center; padding: 40px; color: #39ff14; font-size: 18px; font-weight: 700;">🎮 SFIDE 1V1<br><div style="font-size: 14px; color: #888;">Sfide attive: ${gameState.sfide}</div></div>`;
+                    break;
+                case 'classifica':
+                    container.innerHTML = `<div style="text-align: center; padding: 40px; color: #39ff14; font-size: 18px; font-weight: 700;">🏆 CLASSIFICA<br><div style="font-size: 14px; color: #888;">1. Tu - ${gameState.points} punti 👑<br>2. Marco - 420 punti<br>3. Anna - 385 punti</div></div>`;
+                    break;
+                case 'profilo':
+                    container.innerHTML = `<div style="text-align: center; padding: 40px; color: #39ff14; font-size: 18px; font-weight: 700;">👤 PROFILO<br><div style="font-size: 14px; color: #888;">Streak: ${gameState.streak} 🔥<br>Punti: ${gameState.points}<br>Win: ${gameState.win}%<br><br>🏅 Badge: 🔥 Streak 10 | 💎 Campione 1v1</div></div>`;
+                    break;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadMatches);
+    </script>
+</body>
+</html>

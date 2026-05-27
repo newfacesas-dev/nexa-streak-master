@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXA STREAK MASTER</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #0a0e27 0%, #0d1138 100%); color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; padding-bottom: 140px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
+        .logo-x { background: linear-gradient(90deg, #39ff14 0%, #00ff00 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 32px; font-weight: 900; border: 2px solid #39ff14; padding: 4px 8px; border-radius: 4px; }
+        .logo-text { color: white; font-size: 16px; font-weight: 900; }
+        h1 { font-size: 42px; font-weight: 900; margin: 20px 0; }
+        .subtitle { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+        .stat { background: rgba(20, 30, 70, 0.6); border: 1px solid rgba(57, 255, 20, 0.3); border-radius: 10px; padding: 20px; text-align: center; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 900; color: #39ff14; }
+        .match { background: rgba(20, 30, 70, 0.8); border: 2px solid rgba(57, 255, 20, 0.4); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+        .match-title { font-size: 12px; color: #888; margin-bottom: 15px; }
+        .score-row { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; }
+        .score { font-size: 36px; font-weight: 900; color: #39ff14; text-align: center; flex: 0.3; }
+        .team { text-align: center; flex: 1; }
+        .minute { text-align: center; font-size: 11px; color: #888; margin: 15px 0; }
+        .buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+        .btn { background: rgba(57, 255, 20, 0.1); border: 1px solid rgba(57, 255, 20, 0.3); color: #39ff14; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn:hover { background: rgba(57, 255, 20, 0.2); }
+        .classifica-item { background: rgba(57, 255, 20, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid #39ff14; display: flex; justify-content: space-between; align-items: center; }
+        .rank { font-size: 16px; font-weight: 900; color: #39ff14; min-width: 40px; }
+        .sfida-card { background: rgba(20, 30, 70, 0.8); border: 1px solid rgba(57, 255, 20, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 12px; }
+        .sfida-vs { font-size: 13px; font-weight: 700; color: #39ff14; margin-bottom: 8px; }
+        .sfida-status { display: inline-block; background: rgba(255, 51, 51, 0.2); color: #ff6666; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+        .nuova-sfida { background: linear-gradient(90deg, #39ff14 0%, #00ff00 100%); color: #000; padding: 12px; border-radius: 6px; text-align: center; font-weight: 700; cursor: pointer; margin-bottom: 20px; }
+        .profilo-stat { background: rgba(57, 255, 20, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
+        .profilo-stat-label { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px; }
+        .profilo-stat-value { font-size: 32px; font-weight: 900; color: #39ff14; }
+        .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; justify-content: center; }
+        .badge { background: rgba(57, 255, 20, 0.2); padding: 8px 12px; border-radius: 6px; font-size: 12px; color: #39ff14; font-weight: 700; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 2000; overflow-y: auto; padding: 40px 20px; }
+        .modal.show { display: block; }
+        .modal-inner { background: rgba(20, 30, 70, 0.95); border: 2px solid rgba(57, 255, 20, 0.4); border-radius: 12px; padding: 30px; max-width: 700px; margin: 0 auto; position: relative; }
+        .close { position: absolute; top: 20px; right: 20px; font-size: 28px; cursor: pointer; color: #39ff14; }
+        .player-title { font-size: 20px; font-weight: 900; color: #39ff14; margin-bottom: 20px; }
+        .section { background: rgba(57, 255, 20, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .section-title { font-size: 12px; font-weight: 700; color: #39ff14; text-transform: uppercase; margin-bottom: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .item { background: rgba(57, 255, 20, 0.05); padding: 10px; border-radius: 6px; border-left: 3px solid #39ff14; }
+        .item-label { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        .item-value { font-size: 16px; font-weight: 700; color: #39ff14; }
+        .history-item { background: rgba(57, 255, 20, 0.05); padding: 8px; border-radius: 4px; font-size: 11px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .goal { color: #39ff14; font-weight: 700; }
+        .no-goal { color: #ff6666; font-weight: 700; }
+        .confirm-btn { background: linear-gradient(90deg, #39ff14 0%, #00ff00 100%); color: #000; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 20px; width: 100%; }
+        .cancel-btn { background: rgba(255, 100, 100, 0.3); color: #ff9999; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 10px; width: 100%; }
+        .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 14, 39, 0.98); border-top: 2px solid rgba(57, 255, 20, 0.3); padding: 12px 0; z-index: 1000; }
+        .navbar-inner { display: flex; justify-content: space-around; max-width: 1200px; margin: 0 auto; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: #666; padding: 8px 16px; }
+        .nav-btn.active { color: #39ff14; }
+        .icon { font-size: 24px; }
+        .label { font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        #content { min-height: 400px; }
+        .home { text-align: center; padding: 60px 20px; }
+        .home-logo { font-size: 80px; margin-bottom: 20px; }
+        .home-title { font-size: 48px; font-weight: 900; margin-bottom: 30px; line-height: 1.2; }
+        .home-desc { font-size: 16px; color: #a0a0a0; max-width: 600px; margin: 0 auto 40px; line-height: 1.8; }
+        .home-cta { background: linear-gradient(90deg, #39ff14 0%, #00ff00 100%); color: #000; padding: 18px 40px; border: none; border-radius: 8px; font-weight: 900; font-size: 18px; cursor: pointer; margin-bottom: 50px; transition: all 0.3s; }
+        .home-cta:hover { transform: scale(1.05); }
+        .home-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 600px; margin: 0 auto 50px; }
+        .home-stat-item { background: rgba(20, 30, 70, 0.6); border: 1px solid rgba(57, 255, 20, 0.3); border-radius: 8px; padding: 20px; }
+        .home-stat-number { font-size: 32px; font-weight: 900; color: #39ff14; margin-bottom: 8px; }
+        .home-stat-label { font-size: 12px; color: #888; text-transform: uppercase; }
+        .home-countdown { background: rgba(57, 255, 20, 0.1); border: 2px solid rgba(57, 255, 20, 0.3); padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto; }
+        .countdown-title { font-size: 14px; color: #39ff14; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; }
+        .countdown-date { font-size: 24px; font-weight: 900; color: #39ff14; }
+        .countdown-desc { font-size: 12px; color: #888; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <span class="logo-x">[X]</span>
+            <div><strong>STREAK MASTER</strong><br><span style="font-size: 10px; color: #888;">powered by NEXA</span></div>
+        </div>
+
+        <div id="content">
+            <div class="home" id="homePage">
+                <div class="home-logo">🎯</div>
+                <div class="home-title">ANTICIPA<br>DECIDI<br>VINCI</div>
+                <div class="home-desc">
+                    Ogni giorno scegli 1 giocatore che segnerà nel match LIVE.<br>
+                    Azzecca? Streak +1 e +15 punti!<br>
+                    Sbaglia? Streak resettato.
+                </div>
+                <button class="home-cta" onclick="startGame()">🚀 INIZIA A GIOCARE</button>
+                
+                <div class="home-stats">
+                    <div class="home-stat-item">
+                        <div class="home-stat-number">3</div>
+                        <div class="home-stat-label">Partite LIVE</div>
+                    </div>
+                    <div class="home-stat-item">
+                        <div class="home-stat-number">32</div>
+                        <div class="home-stat-label">Giocatori TOP</div>
+                    </div>
+                    <div class="home-stat-item">
+                        <div class="home-stat-number">∞</div>
+                        <div class="home-stat-label">Sfide 1v1</div>
+                    </div>
+                </div>
+
+                <div class="home-countdown">
+                    <div class="countdown-title">⏰ Prossimo evento</div>
+                    <div class="countdown-date">MONDIALI 2026 🌍</div>
+                    <div class="countdown-desc">Giugno 2026 - Prova il tuo skill!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="playerModal">
+        <div class="modal-inner">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="player-title" id="playerName"></div>
+            
+            <div class="section">
+                <div class="section-title">📊 VALUTAZIONE PROBABILITÀ</div>
+                <div class="grid">
+                    <div class="item"><div class="item-label">Probabilità GOL</div><div class="item-value" id="prob">72%</div></div>
+                    <div class="item"><div class="item-label">Risk Level</div><div class="item-value" id="risk" style="color: #39ff14;">LOW</div></div>
+                    <div class="item"><div class="item-label">Rating</div><div class="item-value" id="rating">8.5/10</div></div>
+                    <div class="item"><div class="item-label">Forma</div><div class="item-value" id="forma">8/10</div></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">⚽ STATISTICHE STAGIONE</div>
+                <div class="grid">
+                    <div class="item"><div class="item-label">Goli</div><div class="item-value" id="goli">18</div></div>
+                    <div class="item"><div class="item-label">Assist</div><div class="item-value" id="assist">5</div></div>
+                    <div class="item"><div class="item-label">Minuti</div><div class="item-value" id="minuti">1890</div></div>
+                    <div class="item"><div class="item-label">Duelli</div><div class="item-value" id="duelli">125</div></div>
+                    <div class="item"><div class="item-label">Passaggi</div><div class="item-value" id="passaggi">45</div></div>
+                    <div class="item"><div class="item-label">Velocità</div><div class="item-value" id="velocita">32.1 km/h</div></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">💰 QUOTE BETTING</div>
+                <div class="grid">
+                    <div class="item"><div class="item-label">Over 0.5 GOL</div><div class="item-value" id="over">2.1</div></div>
+                    <div class="item"><div class="item-label">SÌ/NO</div><div class="item-value" id="siNo">1.45</div></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📜 STORICO ULTIMI 5 MATCH</div>
+                <div class="history-item"><span>2026-05-20 vs Team A</span><span class="goal">⚽ GOL</span></div>
+                <div class="history-item"><span>2026-05-15 vs Team B</span><span class="goal">⚽ GOL</span></div>
+                <div class="history-item"><span>2026-05-10 vs Team C</span><span class="no-goal">❌ NO</span></div>
+                <div class="history-item"><span>2026-05-05 vs Team D</span><span class="goal">⚽ GOL</span></div>
+                <div class="history-item"><span>2026-04-30 vs Team E</span><span class="goal">⚽ GOL</span></div>
+            </div>
+
+            <button class="confirm-btn" onclick="play()">✅ CONFERMA SCELTA</button>
+            <button class="cancel-btn" onclick="closeModal()">← TORNA INDIETRO</button>
+        </div>
+    </div>
+
+    <nav class="navbar" id="navbar" style="display: none;">
+        <div class="navbar-inner">
+            <div class="nav-btn active" onclick="page('live')"><div class="icon">⚽</div><div class="label">LIVE</div></div>
+            <div class="nav-btn" onclick="page('sfide')"><div class="icon">🎮</div><div class="label">SFIDE</div></div>
+            <div class="nav-btn" onclick="page('class')"><div class="icon">🏆</div><div class="label">CLASSIFICA</div></div>
+            <div class="nav-btn" onclick="page('prof')"><div class="icon">👤</div><div class="label">PROFILO</div></div>
+        </div>
+    </nav>
+
+    <script>
+        let selectedPlayer = null;
+        let streak = 12, punti = 485;
+
+        const mockMatches = [
+            { id: 1, league: { name: 'Serie A' }, minute: 45, home: { name: 'Inter', goals: 2 }, away: { name: 'Napoli', goals: 1 } },
+            { id: 2, league: { name: 'La Liga' }, minute: 60, home: { name: 'Real Madrid', goals: 1 }, away: { name: 'Barcelona', goals: 0 } },
+            { id: 3, league: { name: 'Premier League' }, minute: 30, home: { name: 'Man City', goals: 2 }, away: { name: 'Liverpool', goals: 2 } }
+        ];
+
+        function startGame() {
+            document.getElementById('navbar').style.display = 'block';
+            showLive();
+        }
+
+        function showLive() {
+            const content = document.getElementById('content');
+            let html = `
+                <h1>ANTICIPA<br>DECIDI<br>VINCI</h1>
+                <div class="subtitle">🔴 NEXA ARENA | LIVE DATA</div>
+                <div class="stats">
+                    <div class="stat"><div class="stat-label">Streak</div><div class="stat-value" id="streak">${streak}</div></div>
+                    <div class="stat"><div class="stat-label">Punti</div><div class="stat-value" id="punti">${punti}</div></div>
+                    <div class="stat"><div class="stat-label">Sfide</div><div class="stat-value">3</div></div>
+                    <div class="stat"><div class="stat-label">Win %</div><div class="stat-value">67%</div></div>
+                </div>
+            `;
+
+            mockMatches.forEach(m => {
+                html += `
+                    <div class="match">
+                        <div class="match-title">${m.league.name}</div>
+                        <div class="score-row">
+                            <div class="team">${m.home.name}</div>
+                            <div class="score">${m.home.goals}-${m.away.goals}</div>
+                            <div class="team">${m.away.name}</div>
+                        </div>
+                        <div class="minute">🔴 LIVE ${m.minute}'</div>
+                        <div style="font-size: 11px; font-weight: 700; color: #39ff14; margin-bottom: 10px;">👤 SCEGLI MARCATORE</div>
+                        <div class="buttons">
+                            <button class="btn" onclick="modal('${m.home.name} P1')">P1</button>
+                            <button class="btn" onclick="modal('${m.home.name} P2')">P2</button>
+                            <button class="btn" onclick="modal('${m.away.name} P1')">P1</button>
+                            <button class="btn" onclick="modal('${m.away.name} P2')">P2</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = html;
+        }
+
+        function modal(name) {
+            selectedPlayer = name;
+            document.getElementById('playerName').textContent = name;
+            document.getElementById('prob').textContent = Math.floor(Math.random() * 30 + 50) + '%';
+            const risks = ['LOW', 'MEDIUM', 'HIGH'];
+            const risk = risks[Math.floor(Math.random() * 3)];
+            document.getElementById('risk').textContent = risk;
+            document.getElementById('risk').style.color = risk === 'LOW' ? '#39ff14' : risk === 'MEDIUM' ? '#ffff00' : '#ff6666';
+            document.getElementById('rating').textContent = (Math.random() * 2 + 7).toFixed(1) + '/10';
+            document.getElementById('forma').textContent = Math.floor(Math.random() * 3 + 7) + '/10';
+            document.getElementById('goli').textContent = Math.floor(Math.random() * 20 + 5);
+            document.getElementById('assist').textContent = Math.floor(Math.random() * 10 + 2);
+            document.getElementById('minuti').textContent = Math.floor(Math.random() * 1500 + 500);
+            document.getElementById('duelli').textContent = Math.floor(Math.random() * 50 + 80);
+            document.getElementById('passaggi').textContent = Math.floor(Math.random() * 30 + 20);
+            document.getElementById('velocita').textContent = (Math.random() * 5 + 30).toFixed(1) + ' km/h';
+            document.getElementById('over').textContent = (Math.random() * 0.5 + 1.8).toFixed(2);
+            document.getElementById('siNo').textContent = (Math.random() * 0.3 + 1.2).toFixed(2);
+            document.getElementById('playerModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('playerModal').classList.remove('show');
+        }
+
+        function play() {
+            const won = Math.random() > 0.5;
+            if (won) {
+                punti += 15;
+                streak++;
+                alert(`✅ HA SEGNATO!\n${selectedPlayer}\n+15 PUNTI 🚀`);
+            } else {
+                streak = 0;
+                alert(`❌ NON HA SEGNATO!\n${selectedPlayer}\nStreak azzerato.`);
+            }
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('punti').textContent = punti;
+            closeModal();
+        }
+
+        function page(p) {
+            const content = document.getElementById('content');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.closest('.nav-btn').classList.add('active');
+            
+            if (p === 'live') {
+                showLive();
+            } else if (p === 'sfide') {
+                content.innerHTML = `
+                    <h1>SFIDE 1V1</h1>
+                    <div class="nuova-sfida">🎮 NUOVA SFIDA</div>
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 12px; color: #39ff14; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">ATTIVE (2)</div>
+                        <div class="sfida-card"><div class="sfida-vs">🎮 Sfida vs Marco</div><div>Inter 2-1 Napoli</div><div class="sfida-status">IN CORSO</div></div>
+                        <div class="sfida-card"><div class="sfida-vs">🎮 Sfida vs Anna</div><div>Real Madrid 1-0 Barcelona</div><div class="sfida-status">IN CORSO</div></div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 12px; color: #39ff14; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">PENDENTI (1)</div>
+                        <div class="sfida-card"><div class="sfida-vs">🎮 Sfida vs Luca</div><div>Man City 2-2 Liverpool</div><div class="sfida-status">IN ATTESA</div></div>
+                    </div>
+                    <div><div style="font-size: 12px; color: #39ff14; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">COMPLETATE</div><div class="sfida-card"><div class="sfida-vs">🎮 Sfida vs Sofia</div><div>✅ Tu hai vinto! +100 punti</div></div></div>
+                `;
+            } else if (p === 'class') {
+                content.innerHTML = `
+                    <h1>CLASSIFICA 1V1</h1>
+                    <div class="classifica-item"><div class="rank">#1</div><div style="flex: 1;">FalconStrike</div><div style="color: #39ff14; font-weight: 700;">2341</div></div>
+                    <div class="classifica-item"><div class="rank">#2</div><div style="flex: 1;">Tu</div><div style="color: #39ff14; font-weight: 700;">${punti}</div></div>
+                    <div class="classifica-item"><div class="rank">#3</div><div style="flex: 1;">Marco</div><div style="color: #39ff14; font-weight: 700;">420</div></div>
+                    <div class="classifica-item"><div class="rank">#4</div><div style="flex: 1;">Anna</div><div style="color: #39ff14; font-weight: 700;">385</div></div>
+                    <div class="classifica-item"><div class="rank">#5</div><div style="flex: 1;">Luca</div><div style="color: #39ff14; font-weight: 700;">310</div></div>
+                `;
+            } else if (p === 'prof') {
+                content.innerHTML = `
+                    <h1 style="text-align: center;">PROFILO</h1>
+                    <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+                        <div class="profilo-stat"><div class="profilo-stat-label">Streak Attuale</div><div class="profilo-stat-value">${streak} 🔥</div></div>
+                        <div class="profilo-stat"><div class="profilo-stat-label">Punti Totali</div><div class="profilo-stat-value">${punti}</div></div>
+                        <div class="profilo-stat"><div class="profilo-stat-label">Win Rate</div><div class="profilo-stat-value">67%</div></div>
+                        <div style="margin-top: 30px;"><div style="font-size: 12px; color: #39ff14; font-weight: 700; text-transform: uppercase; margin-bottom: 15px;">🏅 Badge Sbloccati</div>
+                        <div class="badges"><div class="badge">🔥 Streak 10</div><div class="badge">💎 Campione 1v1</div><div class="badge">⭐ 100 Vittorie</div><div class="badge">🚀 Lanciato</div></div></div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

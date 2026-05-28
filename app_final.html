@@ -1,0 +1,1960 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NEXA Streak Master</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#6c3de8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Streak Master">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Streak Master">
+
+<!-- SEO -->
+<meta name="description" content="Il gioco di prediction sul calcio LIVE. Scegli 1 giocatore, azzecca il gol, costruisci la tua streak!">
+<meta property="og:title" content="NEXA Streak Master">
+<meta property="og:description" content="Il gioco di prediction sul calcio LIVE. Ogni giorno 1 pick. Streak o reset.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b1a;
+  --bg2: #0d1030;
+  --bg3: #131640;
+  --card: #161a45;
+  --card2: #1e2255;
+  --purple: #6c3de8;
+  --purple2: #7c4df8;
+  --purple-dim: rgba(108,61,232,0.15);
+  --lime: #39ff14;
+  --lime-dim: rgba(57,255,20,0.12);
+  --gold: #f5a623;
+  --gold-dim: rgba(245,166,35,0.15);
+  --red: #ff4d4d;
+  --text: #ffffff;
+  --muted: #6b7db3;
+  --border: rgba(108,61,232,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; padding-bottom:80px; overflow-x:hidden; }
+body.modal-open { overflow:hidden; }
+
+/* PAGES */
+.page { display:none; animation:fadeUp 0.25s ease; }
+.page.active { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* AUTH PAGE */
+.auth-page {
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 24px;
+  background:radial-gradient(ellipse at 20% 20%, rgba(108,61,232,0.15) 0%, transparent 60%),
+             radial-gradient(ellipse at 80% 80%, rgba(57,255,20,0.05) 0%, transparent 60%);
+}
+.auth-logo { text-align:center; margin-bottom:40px; }
+.auth-logo-x { font-family:'Rajdhani',sans-serif; font-size:72px; font-weight:700; color:var(--lime); line-height:1; filter:drop-shadow(0 0 30px rgba(57,255,20,0.3)); }
+.auth-logo-name { font-family:'Rajdhani',sans-serif; font-size:28px; letter-spacing:4px; color:var(--text); margin-top:-8px; }
+.auth-logo-sub { font-size:11px; color:var(--muted); letter-spacing:4px; text-transform:uppercase; margin-top:4px; }
+.auth-tagline { font-family:'Rajdhani',sans-serif; font-size:42px; font-weight:700; color:var(--lime); line-height:1.1; text-align:center; letter-spacing:2px; margin-bottom:8px; }
+.auth-sub { font-size:13px; color:var(--muted); text-align:center; margin-bottom:40px; line-height:1.6; }
+.auth-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; width:100%; max-width:400px; }
+.auth-title { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; letter-spacing:2px; color:var(--lime); margin-bottom:20px; text-align:center; }
+.auth-tabs { display:grid; grid-template-columns:1fr 1fr; background:var(--bg2); border-radius:8px; padding:3px; margin-bottom:20px; }
+.auth-tab { padding:9px; background:none; border:none; color:var(--muted); font-size:13px; font-weight:700; border-radius:6px; cursor:pointer; transition:all 0.2s; }
+.auth-tab.active { background:var(--purple); color:var(--text); }
+.auth-input { width:100%; background:var(--bg2); border:1px solid var(--border); color:var(--text); padding:12px 14px; border-radius:8px; font-size:13px; outline:none; margin-bottom:10px; }
+.auth-input:focus { border-color:var(--purple); }
+.auth-input::placeholder { color:var(--muted); }
+.btn-auth { width:100%; padding:14px; background:linear-gradient(135deg,var(--purple),var(--purple2)); color:var(--text); border:none; font-family:'Rajdhani',sans-serif; font-size:17px; letter-spacing:2px; border-radius:10px; cursor:pointer; margin-bottom:10px; font-weight:700; transition:all 0.2s; box-shadow:0 4px 20px rgba(108,61,232,0.4); }
+.btn-auth:hover { transform:translateY(-1px); }
+.btn-google { width:100%; padding:13px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:var(--text); border-radius:10px; cursor:pointer; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; }
+.btn-google:hover { background:rgba(255,255,255,0.1); }
+.auth-divider { text-align:center; color:var(--muted); font-size:12px; margin:12px 0; }
+.auth-err { background:rgba(255,77,77,0.1); border:1px solid rgba(255,77,77,0.3); border-radius:8px; padding:10px 12px; font-size:12px; color:var(--red); margin-bottom:10px; display:none; }
+
+/* TOPBAR */
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(8,11,26,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; max-width:480px; margin:0 auto; }
+.tb-logo { display:flex; align-items:center; gap:8px; }
+.tb-logo-icon { width:30px; height:30px; background:var(--purple); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700; color:var(--lime); }
+.tb-logo-text { font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; letter-spacing:2px; }
+.tb-logo-text span { color:var(--lime); }
+.tb-right { display:flex; align-items:center; gap:6px; }
+.tb-streak { background:var(--purple-dim); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:11px; font-weight:700; color:var(--lime); }
+.tb-pts { background:var(--gold-dim); border:1px solid rgba(245,166,35,0.3); border-radius:20px; padding:4px 10px; font-size:11px; font-weight:700; color:var(--gold); }
+.tb-avatar { width:28px; height:28px; border-radius:50%; background:var(--purple-dim); border:2px solid var(--purple); display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; overflow:hidden; }
+.tb-avatar img { width:100%; height:100%; object-fit:cover; }
+
+/* CONTAINER */
+.wrap { max-width:480px; margin:0 auto; padding:0 16px; }
+
+/* HOME */
+.home-body { padding:16px; max-width:480px; margin:0 auto; }
+.hero-card { background:linear-gradient(135deg,var(--card2),var(--card)); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:14px; position:relative; overflow:hidden; }
+.hero-card::before { content:''; position:absolute; top:-40%;right:-10%; width:180px; height:180px; background:radial-gradient(circle,rgba(108,61,232,0.2) 0%,transparent 70%); pointer-events:none; }
+.hero-tag { font-size:10px; color:var(--lime); font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.htag-dot { width:6px;height:6px;background:var(--lime);border-radius:50%;animation:blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+.hero-title { font-family:'Rajdhani',sans-serif; font-size:30px; font-weight:700; letter-spacing:2px; line-height:1.1; margin-bottom:6px; }
+.hero-title span { color:var(--lime); }
+.hero-sub { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:18px; }
+.btn-primary { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; background:linear-gradient(135deg,var(--purple),var(--purple2)); color:var(--text); border:none; font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:700; letter-spacing:2px; border-radius:10px; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 20px rgba(108,61,232,0.4); }
+.btn-primary:hover { transform:translateY(-1px); }
+.btn-lime { background:linear-gradient(135deg,#2de010,#39ff14); color:var(--bg); box-shadow:0 4px 20px rgba(57,255,20,0.3); }
+.home-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px; }
+.hg-box { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 10px; text-align:center; }
+.hg-val { font-family:'Rajdhani',sans-serif; font-size:26px; font-weight:700; line-height:1; }
+.hg-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.cd-card { background:linear-gradient(135deg,rgba(245,166,35,0.1),rgba(245,166,35,0.03)); border:1px solid rgba(245,166,35,0.25); border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:space-between; }
+.cd-left .cd-label { font-size:10px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin-bottom:3px; font-weight:700; }
+.cd-left .cd-event { font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:700; }
+.cd-right .cd-days { font-family:'Rajdhani',sans-serif; font-size:44px; color:var(--gold); line-height:1; font-weight:700; }
+.cd-right .cd-sub { font-size:10px; color:var(--muted); margin-top:2px; text-align:center; }
+
+/* LIVE PAGE */
+.page-hdr { padding:14px 16px 0; max-width:480px; margin:0 auto; }
+.page-ttl { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; letter-spacing:2px; margin-bottom:12px; }
+.sel-banner { display:none; margin:0 16px 10px; max-width:calc(480px - 32px); margin-left:auto; margin-right:auto; background:linear-gradient(135deg,rgba(57,255,20,0.15),rgba(57,255,20,0.05)); border:1px solid var(--lime); border-radius:10px; padding:10px 14px; font-size:12px; font-weight:700; color:var(--lime); align-items:center; gap:10px; }
+.sel-banner.show { display:flex; }
+.sel-dot { width:7px;height:7px;background:var(--lime);border-radius:50%;animation:blink 1s infinite;flex-shrink:0; }
+.sel-clear { background:none;border:1px solid rgba(57,255,20,0.4);color:var(--lime);padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;font-weight:700; }
+.tabs-wrap { padding:0 16px 10px; max-width:480px; margin:0 auto; }
+.tabs { display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--card);border-radius:10px;padding:3px;gap:3px;border:1px solid var(--border); }
+.tab-btn { padding:9px;background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;transition:all 0.2s; }
+.tab-btn.active { background:var(--purple);color:var(--text);box-shadow:0 2px 10px rgba(108,61,232,0.4); }
+.ls-wrap { padding:0 16px 10px;max-width:480px;margin:0 auto; }
+.ls-sel { width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c3de8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px; }
+.ls-sel option { background:var(--card2); }
+
+/* MATCH CARDS */
+.mlist { padding:0 16px;max-width:480px;margin:0 auto; }
+.mcard { background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;transition:border-color 0.2s; }
+.mcard:hover { border-color:rgba(108,61,232,0.5); }
+.mcard-top { display:flex;justify-content:space-between;align-items:center;margin-bottom:12px; }
+.mc-league { display:flex;align-items:center;gap:5px; }
+.mc-lg-logo { width:16px;height:16px;object-fit:contain; }
+.mc-lg-name { font-size:11px;color:var(--purple2);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;max-width:185px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.badge-live { font-size:10px;background:rgba(255,77,77,0.2);color:var(--red);padding:3px 8px;border-radius:20px;font-weight:700;display:flex;align-items:center;gap:4px; }
+.badge-ns { font-size:10px;background:var(--gold-dim);color:var(--gold);padding:3px 8px;border-radius:20px;font-weight:700; }
+.badge-ht { font-size:10px;background:var(--purple-dim);color:var(--purple2);padding:3px 8px;border-radius:20px;font-weight:700; }
+.live-dot { width:6px;height:6px;background:var(--red);border-radius:50%;animation:blink 0.8s infinite; }
+.mc-teams { display:flex;align-items:center;gap:8px;margin-bottom:10px; }
+.mc-team { flex:1;display:flex;flex-direction:column;align-items:center;gap:5px; }
+.mc-logo { width:42px;height:42px;object-fit:contain; }
+.mc-name { font-size:11px;font-weight:700;text-align:center;line-height:1.2; }
+.mc-score-wrap { text-align:center;min-width:68px; }
+.mc-score { font-family:'Rajdhani',sans-serif;font-size:34px;color:var(--lime);line-height:1;font-weight:700;letter-spacing:2px; }
+.mc-min { font-size:11px;color:var(--muted);margin-top:2px; }
+.mc-time { font-size:13px;color:var(--gold);font-weight:700; }
+.mc-goals { margin-bottom:8px; }
+.mc-goal-item { display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);padding:3px 0; }
+.mc-gmin { color:var(--lime);font-weight:700;min-width:28px; }
+.btn-pl { width:100%;padding:10px;background:none;border:1px solid var(--border);color:var(--purple2);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px; }
+.btn-pl:hover { background:var(--purple-dim);border-color:var(--purple); }
+.btn-pl.open { background:var(--purple-dim);border-color:var(--purple);color:var(--text); }
+.pl-section { margin-top:10px;animation:fadeUp 0.25s ease; }
+.pt-lbl { font-size:10px;font-weight:700;color:var(--purple2);letter-spacing:2px;text-transform:uppercase;padding:8px 0 5px;border-bottom:1px solid var(--border);margin-bottom:5px; }
+.prow { display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer;transition:all 0.2s;border:1px solid transparent;margin-bottom:3px; }
+.prow:hover:not(.locked) { background:var(--purple-dim);border-color:var(--border); }
+.prow.is-sel { background:rgba(57,255,20,0.1);border-color:var(--lime);box-shadow:0 0 15px rgba(57,255,20,0.1); }
+.prow.locked { opacity:0.3;cursor:not-allowed; }
+.p-photo { width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--card2);flex-shrink:0;border:2px solid var(--border); }
+.p-photo.sel { border-color:var(--lime); }
+.p-info { flex:1;min-width:0; }
+.p-name { font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.p-name.sel { color:var(--lime); }
+.p-sub { font-size:11px;color:var(--muted);margin-top:1px; }
+.p-right { display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0; }
+.p-gol { background:var(--lime-dim);color:var(--lime);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700; }
+.rh { background:rgba(57,255,20,0.2);color:var(--lime);padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700; }
+.rm { background:var(--gold-dim);color:var(--gold);padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700; }
+.rl { background:rgba(255,77,77,0.15);color:var(--red);padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700; }
+.empty { text-align:center;padding:50px 20px;color:var(--muted); }
+.empty-icon { font-size:44px;margin-bottom:12px; }
+
+/* SFIDE */
+.sf-wrap { padding:0 16px;max-width:480px;margin:0 auto; }
+.sf-card { background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px; }
+.sf-vs { font-weight:700;font-size:14px;margin-bottom:4px; }
+.sf-detail { font-size:12px;color:var(--muted); }
+.sf-foot { display:flex;align-items:center;justify-content:space-between;margin-top:8px; }
+.sf-status { display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:1px; }
+.s-act { background:var(--gold-dim);color:var(--gold); }
+.s-win { background:var(--lime-dim);color:var(--lime); }
+.s-loss { background:rgba(255,77,77,0.12);color:var(--red); }
+.sf-sec { font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin:14px 0 8px; }
+
+/* CLASSIFICA */
+.lb-wrap { padding:0 16px;max-width:480px;margin:0 auto; }
+.lb-row { display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px; }
+.lb-row.me { border-color:var(--lime);background:rgba(57,255,20,0.07); }
+.lb-rank { font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;min-width:30px;text-align:center; }
+.lb-av { width:36px;height:36px;border-radius:50%;background:var(--purple-dim);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;overflow:hidden; }
+.lb-av img { width:100%;height:100%;object-fit:cover; }
+.lb-name { flex:1;font-weight:700;font-size:13px; }
+.lb-streak { font-size:11px;color:var(--gold);margin-top:1px;font-weight:600; }
+.lb-pts { font-family:'Rajdhani',sans-serif;font-size:22px;color:var(--gold);font-weight:700; }
+
+/* PROFILO */
+.prof-wrap { padding:0 16px;max-width:480px;margin:0 auto; }
+.prof-hero { background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;margin-bottom:14px; }
+.prof-av { width:70px;height:70px;border-radius:50%;background:var(--purple-dim);border:3px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px;overflow:hidden; }
+.prof-av img { width:100%;height:100%;object-fit:cover; }
+.prof-name { font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:2px;color:var(--lime); }
+.prof-email { font-size:12px;color:var(--muted);margin-top:3px; }
+.prof-level { font-size:11px;color:var(--muted);margin-top:3px; }
+.prof-stats { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
+.ps-box { background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px; }
+.ps-val { font-family:'Rajdhani',sans-serif;font-size:30px;line-height:1;font-weight:700; }
+.ps-lbl { font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px; }
+.badges-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px; }
+.badge-box { background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center; }
+.badge-em { font-size:26px;margin-bottom:5px; }
+.badge-lbl { font-size:9px;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+.badge-desc { font-size:9px;color:var(--muted);margin-top:1px; }
+.btn-logout { width:100%;padding:12px;background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.3);color:var(--red);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:16px;letter-spacing:1px; }
+
+/* MODALS */
+.modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;overflow-y:auto;padding:20px 16px;backdrop-filter:blur(8px); }
+.modal.open { display:flex;align-items:flex-start;justify-content:center; }
+.modal-box { background:linear-gradient(160deg,var(--card2) 0%,var(--bg3) 100%);border:1px solid var(--border);border-radius:16px;padding:22px;width:100%;max-width:440px;position:relative;animation:slideUp 0.3s ease; }
+@keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-box::before { content:'';position:absolute;top:0;left:30%;right:30%;height:2px;background:linear-gradient(90deg,transparent,var(--purple),transparent);border-radius:2px; }
+.modal-close { position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.06);border:none;color:var(--text);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center; }
+.modal-title { font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;color:var(--lime);margin-bottom:16px; }
+
+/* PLAYER MODAL */
+.m-ph { display:flex;gap:12px;align-items:flex-start;margin-bottom:16px; }
+.m-photo { width:58px;height:58px;border-radius:12px;object-fit:cover;background:var(--bg3);border:2px solid var(--border);flex-shrink:0; }
+.m-pname { font-family:'Rajdhani',sans-serif;font-size:22px;color:var(--lime);line-height:1;font-weight:700; }
+.m-pmeta { font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5; }
+.m-pbdg { display:flex;flex-wrap:wrap;gap:5px;margin-top:6px; }
+.mpb { padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700; }
+.mpb-p { background:var(--purple-dim);color:var(--purple2); }
+.mpb-r { background:var(--gold-dim);color:var(--gold); }
+.m-prob { margin-bottom:14px; }
+.m-ptop { display:flex;justify-content:space-between;align-items:center;margin-bottom:6px; }
+.m-plbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700; }
+.m-pval { font-family:'Rajdhani',sans-serif;font-size:22px;color:var(--lime);font-weight:700; }
+.m-pbar { height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin-bottom:5px; }
+.m-pfill { height:100%;border-radius:4px;transition:width 0.8s ease;background:linear-gradient(90deg,var(--purple),var(--lime)); }
+.m-psub { display:flex;justify-content:space-between;font-size:11px; }
+.m-sg { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px; }
+.m-sb { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px; }
+.m-sv { font-family:'Rajdhani',sans-serif;font-size:24px;color:var(--lime);line-height:1;font-weight:700; }
+.m-sl { font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px; }
+.m-eg { display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:12px; }
+.m-eb { background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:9px;text-align:center; }
+.m-ev { font-size:15px;color:var(--lime);font-weight:700; }
+.m-el { font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px; }
+.m-sec { font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px; }
+.m-gh { margin-bottom:12px; }
+.m-ghbar { display:flex;gap:3px;margin-bottom:7px; }
+.ghitem { flex:1;height:30px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700; }
+.gh-g { background:rgba(57,255,20,0.2);color:var(--lime);border:1px solid rgba(57,255,20,0.3); }
+.gh-n { background:rgba(255,77,77,0.1);color:rgba(255,77,77,0.5);border:1px solid rgba(255,77,77,0.15); }
+.m-ghrows { display:flex;flex-direction:column;gap:3px; }
+.ghrow { display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:6px;font-size:11px; }
+.gh-mt { color:var(--muted); }
+.ghw { color:var(--lime);font-weight:700; }
+.ghl { color:rgba(255,77,77,0.7);font-weight:700; }
+.m-odds { display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px; }
+.m-odd { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px;text-align:center; }
+.m-ov { font-family:'Rajdhani',sans-serif;font-size:22px;color:var(--gold);font-weight:700; }
+.m-ol { font-size:9px;color:var(--muted);margin-top:2px; }
+.m-disc { font-size:9px;color:rgba(255,255,255,0.2);text-align:center;margin-bottom:12px; }
+.btn-sel { width:100%;padding:14px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:var(--text);border:none;font-family:'Rajdhani',sans-serif;font-size:17px;letter-spacing:2px;border-radius:10px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 15px rgba(108,61,232,0.4);font-weight:700; }
+.btn-sel:hover { transform:translateY(-1px); }
+.pick-type-btn { padding:10px 8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;text-align:center;transition:all 0.2s;line-height:1.4; }
+.pick-type-btn.active { background:var(--purple-dim);border-color:var(--purple);color:var(--lime); }
+.pick-type-btn:hover { border-color:var(--purple); }
+.legal-section { background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px; }
+.legal-title { font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--lime);letter-spacing:1px;margin-bottom:6px; }
+.legal-body { font-size:12px;color:var(--muted);line-height:1.7; }
+.btn-desel { background:rgba(255,77,77,0.15)!important;color:var(--red)!important;border:1px solid rgba(255,77,77,0.3)!important;box-shadow:none!important; }
+.btn-dis { background:rgba(255,255,255,0.05)!important;color:var(--muted)!important;border:1px solid var(--border)!important;cursor:not-allowed!important;box-shadow:none!important;transform:none!important; }
+
+/* SFIDA MODAL */
+.sf-input { width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:8px;font-size:13px;outline:none;margin-bottom:10px; }
+.sf-input::placeholder { color:var(--muted); }
+.sf-input:focus { border-color:var(--purple); }
+.sf-note { background:var(--gold-dim);border:1px solid rgba(245,166,35,0.2);border-radius:8px;padding:11px;font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:16px; }
+.sf-my-pick { background:var(--purple-dim);border:1px solid var(--border);border-radius:8px;padding:11px;font-size:13px;font-weight:700;margin-bottom:14px; }
+
+/* NAV */
+nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0); }
+.nav-btn { flex:1;padding:10px 4px 8px;background:none;border:none;color:var(--muted);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all 0.2s;position:relative; }
+.nav-icon { font-size:22px;line-height:1; }
+.nav-btn.active { color:var(--lime); }
+.nav-btn.active::before { content:'';position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--lime);border-radius:0 0 2px 2px; }
+
+/* TOAST */
+.toast { position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--purple2);color:var(--text);padding:10px 20px;border-radius:25px;font-size:13px;font-weight:700;z-index:2000;white-space:nowrap;transition:transform 0.35s ease;box-shadow:0 4px 20px rgba(108,61,232,0.5);border:1px solid rgba(255,255,255,0.1); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* LOADING */
+.ldwrap { text-align:center;padding:40px 20px; }
+.ldot { display:inline-block;width:8px;height:8px;background:var(--purple);border-radius:50%;margin:0 3px;animation:bounce 1.2s infinite; }
+.ldot:nth-child(2){animation-delay:0.2s} .ldot:nth-child(3){animation-delay:0.4s}
+@keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.3} 40%{transform:scale(1);opacity:1} }
+
+/* PICK GIORNALIERO */
+.pick-done-banner { background:linear-gradient(135deg,rgba(57,255,20,0.15),rgba(57,255,20,0.05));border:1px solid var(--lime);border-radius:12px;padding:14px;margin:0 16px 12px;max-width:calc(480px - 32px);margin-left:auto;margin-right:auto;text-align:center; }
+.pick-done-title { font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--lime);margin-bottom:4px; }
+.pick-done-sub { font-size:12px;color:var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ═══ AUTH PAGE ═══ -->
+<div id="authPage" style="display:block;">
+  <div class="auth-page">
+    <div class="auth-logo">
+      <div class="auth-logo-x">⚽</div>
+      <div class="auth-logo-name">STREAK MASTER</div>
+      
+    </div>
+    <div class="auth-tagline">ANTICIPA<br>DECIDI<br>VINCI</div>
+    <p class="auth-sub">Il gioco di prediction sul calcio LIVE.<br>Ogni giorno 1 pick. Streak o reset.</p>
+    <div class="auth-card">
+      <div class="auth-title">ACCEDI O REGISTRATI</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="setAuthTab('login',this)">ACCEDI</button>
+        <button class="auth-tab" onclick="setAuthTab('register',this)">REGISTRATI</button>
+      </div>
+      <div id="auth-err" class="auth-err"></div>
+      <div id="auth-name-wrap" style="display:none;">
+        <input class="auth-input" id="auth-name" type="text" placeholder="Il tuo username (es: Enrico92)">
+      </div>
+      <input class="auth-input" id="auth-email" type="email" placeholder="Email">
+      <input class="auth-input" id="auth-pass" type="password" placeholder="Password">
+      <button class="btn-auth" onclick="authWithEmail()" id="auth-email-btn">ACCEDI</button>
+      <div class="auth-divider">— oppure —</div>
+      <button class="btn-google" onclick="authWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+        Continua con Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP (mostrata dopo login) ═══ -->
+<div id="appRoot" style="display:none;">
+
+  <!-- HOME -->
+  <div id="home" class="page active">
+    <div class="topbar">
+      <div class="tb-logo"><div class="tb-logo-icon">⚽</div><div class="tb-logo-text">STREAK <span>MASTER</span></div></div>
+      <div class="tb-right">
+        <div class="tb-streak" id="tb-streak">🔥 0</div>
+        <div class="tb-pts" id="tb-pts">⚡ 0</div>
+        <div class="tb-avatar" id="tb-avatar" onclick="switchPage('profilo',null)">👤</div>
+      </div>
+    </div>
+    <div class="home-body">
+      <div class="hero-card">
+        <div class="hero-tag"><span class="htag-dot"></span>PREDICTION GAME LIVE</div>
+        <div class="hero-title">ANTICIPA<br>DECIDI<br><span>VINCI</span></div>
+        <div class="hero-sub">Scegli 1 giocatore che segnerà nel match LIVE. Azzecca? Streak +1. Sbaglia? Reset totale.</div>
+        <button class="btn-primary btn-lime" onclick="switchPage('live',null)">🚀 INIZIA A GIOCARE</button>
+      </div>
+      <div class="home-grid">
+        <div class="hg-box"><div class="hg-val" id="h-live" style="color:var(--lime)">—</div><div class="hg-lbl">Live ora</div></div>
+        <div class="hg-box"><div class="hg-val" id="h-streak" style="color:var(--gold)">🔥0</div><div class="hg-lbl">Streak</div></div>
+        <div class="hg-box"><div class="hg-val" id="h-pts" style="color:var(--purple2)">0</div><div class="hg-lbl">Punti</div></div>
+      </div>
+      <div class="cd-card">
+        <div class="cd-left"><div class="cd-label">⏰ prossimo evento</div><div class="cd-event">🌍 MONDIALI 2026</div></div>
+        <div class="cd-right"><div class="cd-days" id="cd-days">—</div><div class="cd-sub">giorni</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE -->
+  <div id="live" class="page">
+    <div class="topbar">
+      <div class="tb-logo"><div class="tb-logo-icon">⚽</div><div class="tb-logo-text">STREAK <span>MASTER</span></div></div>
+      <div class="tb-right"><div class="tb-streak" id="tb-streak2">🔥 0</div><div class="tb-pts" id="tb-pts2">⚡ 0</div></div>
+    </div>
+    <div id="pick-done-wrap"></div>
+    <div id="sel-banner" class="sel-banner">
+      <div class="sel-dot"></div>
+      <div style="flex:1;">Pick: <strong id="sel-name">—</strong></div>
+      <button class="sel-clear" onclick="clearSel()" id="sel-change-btn">✕ Cambia</button>
+    </div>
+
+    <!-- ADS REWARDED BUTTONS -->
+    <div id="rewarded-btns" style="padding:0 16px 10px;max-width:480px;margin:0 auto;display:flex;gap:8px;">
+      <button onclick="watchAdForPick()" style="flex:1;padding:9px;background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);color:var(--gold);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">
+        📺 Pick Extra
+      </button>
+      <button onclick="watchAdForShield()" style="flex:1;padding:9px;background:rgba(108,61,232,0.1);border:1px solid var(--border);color:var(--purple2);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">
+        📺 Shield Gratis
+      </button>
+    </div>
+    <div class="tabs-wrap" style="padding-top:12px;">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="setTab('live',this)">🔴 LIVE</button>
+        <button class="tab-btn" onclick="setTab('today',this)">📅 OGGI</button>
+        <button class="tab-btn" onclick="setTab('tomorrow',this)">⏭ DOMANI</button>
+      </div>
+    </div>
+    <div class="ls-wrap">
+      <select class="ls-sel" id="leagueSel" onchange="filterLeague()">
+        <option value="all">🌍 Tutti i campionati</option>
+      </select>
+    </div>
+    <div class="mlist" id="mlist"><div class="ldwrap"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div></div>
+  </div>
+
+  <!-- SFIDE -->
+  <div id="sfide" class="page">
+    <div class="topbar">
+      <div class="tb-logo"><div class="tb-logo-icon">⚽</div><div class="tb-logo-text">STREAK <span>MASTER</span></div></div>
+      <div class="tb-right"><div class="tb-streak" id="tb-streak3">🔥 0</div></div>
+    </div>
+    <div class="page-hdr"><div class="page-ttl">🎯 SFIDE 1V1</div></div>
+    <div class="sf-wrap">
+      <button class="btn-primary" style="margin-bottom:16px;" onclick="openSfidaModal()">+ NUOVA SFIDA</button>
+      <div class="sf-sec">ATTIVE</div>
+      <div id="sfide-attive"><div style="color:var(--muted);font-size:12px;padding:10px 0;">Nessuna sfida attiva</div></div>
+      <div class="sf-sec">COMPLETATE</div>
+      <div id="sfide-completate"><div style="color:var(--muted);font-size:12px;padding:10px 0;">Nessuna sfida completata</div></div>
+    </div>
+  </div>
+
+  <!-- CLASSIFICA -->
+  <div id="classifica" class="page">
+    <div class="topbar">
+      <div class="tb-logo"><div class="tb-logo-icon">⚽</div><div class="tb-logo-text">STREAK <span>MASTER</span></div></div>
+    </div>
+    <div class="page-hdr"><div class="page-ttl">🏆 CLASSIFICA</div></div>
+    <div class="lb-wrap" id="leaderboard-wrap">
+      <div class="ldwrap"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div>
+    </div>
+  </div>
+
+  <!-- PROFILO -->
+  <div id="profilo" class="page">
+    <div class="topbar">
+      <div class="tb-logo"><div class="tb-logo-icon">⚽</div><div class="tb-logo-text">STREAK <span>MASTER</span></div></div>
+    </div>
+    <div class="page-hdr"><div class="page-ttl">👤 PROFILO</div></div>
+    <div class="prof-wrap">
+      <div class="prof-hero">
+        <div class="prof-av" id="prof-av">👤</div>
+        <div class="prof-name" id="prof-name">—</div>
+        <div class="prof-email" id="prof-email">—</div>
+        <div class="prof-level" id="prof-level">⭐ Livello 1</div>
+      </div>
+
+      <!-- LIVELLO E PROGRESSIONE -->
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;" id="prof-level-section">
+        <div style="color:var(--muted);font-size:12px;">Caricamento livello...</div>
+      </div>
+
+      <!-- STATS -->
+      <div class="prof-stats">
+        <div class="ps-box"><div class="ps-val" id="prof-streak" style="color:var(--gold);">🔥 0</div><div class="ps-lbl">Streak attuale</div></div>
+        <div class="ps-box"><div class="ps-val" id="prof-pts" style="color:var(--purple2);">0</div><div class="ps-lbl">Punti totali</div></div>
+        <div class="ps-box"><div class="ps-val" id="prof-wr" style="color:var(--lime);">0%</div><div class="ps-lbl">Win rate</div></div>
+        <div class="ps-box"><div class="ps-val" id="prof-picks" style="color:var(--text);">0</div><div class="ps-lbl">Picks totali</div></div>
+      </div>
+
+      <!-- SHIELD STATUS -->
+      <div id="shield-status" style="margin-bottom:14px;display:none;"></div>
+
+      <!-- ULTIMO PICK -->
+      <div id="last-pick-section" style="margin-bottom:14px;display:none;">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">🎯 ULTIMO PICK</div>
+        <div id="last-pick-card" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;"></div>
+      </div>
+
+      <!-- SBLOCCHI -->
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">🔓 SBLOCCHI</div>
+      <div id="unlock-section" style="margin-bottom:14px;">
+        <!-- Popolato da JS -->
+      </div>
+
+      <!-- BADGE -->
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">🏅 BADGE</div>
+      <div class="badges-grid" id="prof-badges"></div>
+
+      <button class="btn-primary" style="margin-top:14px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#080b1a;box-shadow:0 4px 20px rgba(245,166,35,0.4);" onclick="switchPage('pricing',null)">👑 DIVENTA PREMIUM</button>
+      <button id="notif-btn" onclick="toggleNotifications()" style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;letter-spacing:1px;">🔕 Attiva Notifiche</button>
+      <button class="btn-logout" onclick="logout()">⬅ ESCI</button>
+    </div>
+  </div>
+
+  <!-- PRICING PAGE -->
+  <div id="pricing" class="page">
+    <div class="topbar">
+      <button onclick="switchPage('profilo',null)" style="background:none;border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">← TORNA</button>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;">NEXA <span style="color:var(--lime);">PREMIUM</span></div>
+      <div style="width:80px;"></div>
+    </div>
+    <div style="padding:30px 16px 20px;max-width:480px;margin:0 auto;text-align:center;">
+      <div style="font-size:48px;margin-bottom:12px;">👑</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-bottom:8px;">SCEGLI IL TUO PIANO</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">Sblocca statistiche avanzate, picks illimitati e sfide esclusive.</div>
+
+      <!-- TOGGLE -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px;">
+        <span id="p-mlbl" style="font-size:13px;font-weight:700;color:var(--text);">MENSILE</span>
+        <div id="p-toggle" onclick="togglePricing()" style="width:48px;height:26px;background:var(--purple);border-radius:13px;cursor:pointer;position:relative;transition:all 0.2s;">
+          <div id="p-tball" style="width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:3px;left:3px;transition:all 0.2s;"></div>
+        </div>
+        <span id="p-albl" style="font-size:13px;font-weight:700;color:var(--muted);">ANNUALE</span>
+        <span style="background:var(--lime-dim);border:1px solid rgba(57,255,20,0.3);color:var(--lime);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">-40%</span>
+      </div>
+
+      <!-- FREE -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;text-align:left;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div><div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;">🎮 FREE</div><div style="font-size:12px;color:var(--muted);">Per sempre gratis</div></div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:var(--muted);">€0</div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:2;">✓ 1 pick al giorno &nbsp; ✓ Partite LIVE &nbsp; ✓ Classifica &nbsp; ✓ 3 sfide/mese<br>✗ Statistiche avanzate &nbsp; ✗ Notifiche gol &nbsp; ✗ Streak Shield</div>
+        <button style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:12px;">PIANO ATTUALE</button>
+      </div>
+
+      <!-- PREMIUM -->
+      <div style="background:linear-gradient(135deg,rgba(57,255,20,0.08),var(--card));border:2px solid var(--lime);border-radius:16px;padding:20px;margin-bottom:12px;text-align:left;position:relative;">
+        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--lime);color:var(--bg);padding:4px 16px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:2px;white-space:nowrap;">⚡ PIÙ POPOLARE</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div><div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--lime);">🔥 PREMIUM</div><div style="font-size:12px;color:var(--muted);" id="p-prem-period">al mese</div></div>
+          <div><span style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:var(--lime);" id="p-prem-price">€4.99</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--text);line-height:2;">✓ Picks illimitati &nbsp; ✓ Statistiche avanzate &nbsp; ✓ Sfide illimitate<br>✓ Storico 20 partite &nbsp; ✓ Notifiche gol push &nbsp; ✗ Streak Shield</div>
+        <button onclick="showToast('Coming soon! 🚀')" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:12px;box-shadow:0 4px 15px rgba(108,61,232,0.4);">INIZIA ORA</button>
+      </div>
+
+      <!-- PRO -->
+      <div style="background:linear-gradient(135deg,rgba(245,166,35,0.08),var(--card));border:1px solid rgba(245,166,35,0.4);border-radius:16px;padding:20px;margin-bottom:20px;text-align:left;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div><div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--gold);">👑 PRO</div><div style="font-size:12px;color:var(--muted);" id="p-pro-period">al mese</div></div>
+          <div><span style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:var(--gold);" id="p-pro-price">€9.99</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--text);line-height:2;">✓ Tutto di Premium &nbsp; ✓ Streak Shield 1/mese<br>✓ Analisi AI giocatori &nbsp; ✓ Torneo mensile esclusivo &nbsp; ✓ Badge PRO</div>
+        <button onclick="showToast('Coming soon! 👑')" style="width:100%;padding:13px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#080b1a;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:12px;box-shadow:0 4px 15px rgba(245,166,35,0.4);">DIVENTA PRO</button>
+      </div>
+
+      <!-- NOTE -->
+      <div style="background:var(--card);border:1px solid rgba(245,166,35,0.2);border-radius:12px;padding:16px;margin-bottom:16px;text-align:left;">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--gold);margin-bottom:8px;">💰 COME FUNZIONA NEXA</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7;">✓ App gratuita · ✓ Solo punti virtuali · ✓ No gioco d'azzardo<br>✓ Rewarded ads opzionali · ✓ Quote solo indicative<br>✓ Compliance 100% · ✓ Cancella quando vuoi</div>
+      </div>
+
+      <div style="font-size:10px;color:rgba(255,255,255,0.2);text-align:center;line-height:1.7;">
+        18+ · Quote indicative · Non sono offerte di scommessa · Gioca responsabilmente<br>
+        <span style="color:var(--purple2);text-decoration:underline;cursor:pointer;font-weight:700;" onclick="switchPage('privacy',null)">Privacy Policy</span> · <span style="color:var(--purple2);text-decoration:underline;cursor:pointer;font-weight:700;" onclick="switchPage('terms',null)">Termini di Servizio</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY POLICY -->
+  <div id="privacy" class="page">
+    <div class="topbar">
+      <button onclick="switchPage('profilo',null)" style="background:none;border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">← TORNA</button>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;color:var(--lime);">PRIVACY POLICY</div>
+      <div style="width:80px;"></div>
+    </div>
+    <div style="max-width:480px;margin:0 auto;padding:24px 16px 40px;">
+      <div style="font-size:22px;font-weight:900;color:var(--lime);letter-spacing:2px;margin-bottom:4px;">PRIVACY POLICY</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:24px;">Ultimo aggiornamento: 28 maggio 2026</div>
+      <div style="background:var(--purple-dim);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;">🔒 NEXA Streak Master è un gioco di abilità. Non raccogliamo dati sensibili e non vendiamo dati a terzi.</div>
+      <div class="legal-section"><div class="legal-title">1. TITOLARE</div><div class="legal-body">NEXA Arena / Newfacesas Dev · privacy@nexaarena.com</div></div>
+      <div class="legal-section"><div class="legal-title">2. DATI RACCOLTI</div><div class="legal-body">• Email e username (registrazione)<br>• Picks, streak, punti (gioco)<br>• Dati tecnici anonimi<br><br>❌ NON raccogliamo: carte di credito, documenti, GPS.</div></div>
+      <div class="legal-section"><div class="legal-title">3. COME LI USIAMO</div><div class="legal-body">• Gestire il tuo account<br>• Salvare i progressi di gioco<br>• Mostrare la classifica<br>• Migliorare l'app</div></div>
+      <div class="legal-section"><div class="legal-title">4. SERVIZI TERZI</div><div class="legal-body">• Firebase (Google): autenticazione e database<br>• API-Football: dati partite<br>• Netlify/Railway: hosting<br>• Google Analytics: analytics anonimi</div></div>
+      <div class="legal-section"><div class="legal-title">5. I TUOI DIRITTI (GDPR)</div><div class="legal-body">✅ Accesso · ✅ Rettifica · ✅ Cancellazione · ✅ Portabilità<br>Contatta: privacy@nexaarena.com</div></div>
+      <div class="legal-section"><div class="legal-title">6. SICUREZZA</div><div class="legal-body">• Comunicazioni HTTPS/TLS<br>• Password gestite da Firebase Auth<br>• Nessun dato sensibile sul dispositivo</div></div>
+      <div class="legal-section"><div class="legal-title">7. MINORI</div><div class="legal-body">Minimo 13 anni. Under 18 richiede consenso genitoriale.</div></div>
+      <div class="legal-section" style="border-color:rgba(255,165,0,0.3);background:rgba(255,165,0,0.05);"><div class="legal-title" style="color:var(--gold);">8. QUOTE - DISCLAIMER</div><div class="legal-body">⚠️ Le quote sono PURAMENTE INDICATIVE. Non sono offerte di scommessa. NEXA non è un bookmaker. 18+. Gioca responsabilmente.</div></div>
+      <div style="text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,0.2);">© 2026 NEXA Arena · Conforme GDPR</div>
+    </div>
+  </div>
+
+  <!-- TERMINI DI SERVIZIO -->
+  <div id="terms" class="page">
+    <div class="topbar">
+      <button onclick="switchPage('profilo',null)" style="background:none;border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">← TORNA</button>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;color:var(--lime);">TERMINI DI SERVIZIO</div>
+      <div style="width:80px;"></div>
+    </div>
+    <div style="max-width:480px;margin:0 auto;padding:24px 16px 40px;">
+      <div style="font-size:22px;font-weight:900;color:var(--lime);letter-spacing:2px;margin-bottom:4px;">TERMINI DI SERVIZIO</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:24px;">Ultimo aggiornamento: 28 maggio 2026</div>
+      <div class="legal-section"><div class="legal-title">1. IL SERVIZIO</div><div class="legal-body">NEXA Streak Master è un gioco di abilità calcistica con punti virtuali senza valore monetario reale. NON è gioco d'azzardo.</div></div>
+      <div class="legal-section"><div class="legal-title">2. ETÀ MINIMA</div><div class="legal-body">Minimo 13 anni. Consigliato 18+ per sezioni con quote indicative.</div></div>
+      <div class="legal-section"><div class="legal-title">3. ACCOUNT</div><div class="legal-body">• Sei responsabile della sicurezza del tuo account<br>• Un solo account per persona<br>• Vietati bot e strumenti automatici</div></div>
+      <div class="legal-section"><div class="legal-title">4. REGOLE DI GIOCO</div><div class="legal-body">• 1 pick/giorno (piano Free)<br>• Il pick va fatto prima della partita<br>• Risultati verificati da API-Football<br>• Streak si azzera a mezzanotte se non si gioca</div></div>
+      <div class="legal-section"><div class="legal-title">5. VIETATO</div><div class="legal-body">• Bot e script automatici<br>• Account multipli<br>• Manipolazione punteggi<br>• Molestie ad altri utenti</div></div>
+      <div class="legal-section"><div class="legal-title">6. PIANI PREMIUM</div><div class="legal-body">• Pagamenti via Stripe<br>• Cancellazione in qualsiasi momento<br>• Nessun rimborso per periodi già pagati</div></div>
+      <div class="legal-section" style="border-color:rgba(255,77,77,0.3);background:rgba(255,77,77,0.05);"><div class="legal-title" style="color:var(--red);">7. DISCLAIMER LEGALE QUOTE</div><div class="legal-body">⚠️ Le quote sono generate algoritmicamente a scopo informativo. Non sono offerte di scommessa. NEXA Arena non è un bookmaker. 18+. Il gioco può causare dipendenza. Aiuto: 800 721 721</div></div>
+      <div class="legal-section"><div class="legal-title">8. LEGGE APPLICABILE</div><div class="legal-body">Legge italiana. Foro competente: Milano.</div></div>
+      <div class="legal-section"><div class="legal-title">9. CONTATTI</div><div class="legal-body">legal@nexaarena.com</div></div>
+      <div style="text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,0.2);">© 2026 NEXA Arena · Tutti i diritti riservati</div>
+    </div>
+  </div>
+
+</div><!-- end appRoot -->
+
+<!-- PLAYER MODAL -->
+<div id="playerModal" class="modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="m-ph">
+      <img id="m-photo" class="m-photo" src="" alt="" onerror="this.style.display='none'">
+      <div><div class="m-pname" id="m-name"></div><div class="m-pmeta" id="m-meta"></div><div class="m-pbdg" id="m-bdg"></div></div>
+    </div>
+    <div class="m-prob">
+      <div class="m-ptop"><span class="m-plbl">Probabilità Gol</span><span class="m-pval" id="m-pval">—%</span></div>
+      <div class="m-pbar"><div class="m-pfill" id="m-pfill" style="width:0%"></div></div>
+      <div class="m-psub"><span id="m-risk"></span><span style="color:var(--muted);font-size:11px;" id="m-match"></span></div>
+    </div>
+    <div class="m-sg">
+      <div class="m-sb"><div class="m-sv" id="m-g">0</div><div class="m-sl">⚽ Gol stagione</div></div>
+      <div class="m-sb"><div class="m-sv" id="m-a">0</div><div class="m-sl">🎯 Assist</div></div>
+      <div class="m-sb"><div class="m-sv" id="m-s">0</div><div class="m-sl">🔫 Tiri(porta)</div></div>
+      <div class="m-sb"><div class="m-sv" id="m-p">0</div><div class="m-sl">📤 Passaggi</div></div>
+    </div>
+    <div class="m-eg">
+      <div class="m-eb"><div class="m-ev" id="m-min">0'</div><div class="m-el">Minuti</div></div>
+      <div class="m-eb"><div class="m-ev" id="m-apps">0</div><div class="m-el">Presenze</div></div>
+      <div class="m-eb"><div class="m-ev" id="m-gpg">0</div><div class="m-el">Gol/Part</div></div>
+    </div>
+    <div class="m-sec">⚽ STORICO GOL — ULTIMI 5 MATCH</div>
+    <div class="m-gh">
+      <div class="m-ghbar" id="m-ghbar"><span style="color:var(--muted);font-size:11px;">⏳ Caricamento...</span></div>
+      <div class="m-ghrows" id="m-ghrows"></div>
+    </div>
+    <div class="m-sec">📈 QUOTE INDICATIVE</div>
+    <div class="m-odds">
+      <div class="m-odd"><div class="m-ov" id="m-q1">—</div><div class="m-ol">Segna</div></div>
+      <div class="m-odd"><div class="m-ov" id="m-q2">—</div><div class="m-ol">Non segna</div></div>
+      <div class="m-odd"><div class="m-ov" id="m-q3">—</div><div class="m-ol">2+ gol</div></div>
+    </div>
+    <div class="m-disc">18+ · Quote indicative · Non sono offerte di scommessa · Gioca responsabilmente</div>
+
+    <!-- TIPO PICK -->
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">🎯 TIPO DI PICK</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;" id="pick-type-grid">
+        <button class="pick-type-btn active" data-type="goal" onclick="handlePickType('goal',this)">⚽ GOL<br><span style="font-size:9px;color:var(--muted);">+15 · Sempre</span></button>
+        <button class="pick-type-btn" data-type="assist" id="btn-assist" onclick="handlePickType('assist',this)">🎯 ASSIST<br><span style="font-size:9px;" id="assist-lbl">+12 · LVL 2</span></button>
+        <button class="pick-type-btn" data-type="double" id="btn-double" onclick="handlePickType('double',this)">⚽⚽ DOPPIETTA<br><span style="font-size:9px;" id="double-lbl">+35 · LVL 3</span></button>
+        <button class="pick-type-btn" data-type="triple" id="btn-triple" onclick="handlePickType('triple',this)">⚽⚽⚽ TRIPLETTA<br><span style="font-size:9px;" id="triple-lbl">+75 · LVL 7</span></button>
+      </div>
+      <div id="pick-slots-info" style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center;"></div>
+    </div>
+
+    <button class="btn-sel" id="m-selbtn" onclick="confirmSel()">✓ SELEZIONA GIOCATORE</button>
+  </div>
+</div>
+
+<!-- SFIDA MODAL -->
+<div id="sfidaModal" class="modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('sfidaModal').classList.remove('open');document.body.classList.remove('modal-open')">✕</button>
+    <div class="modal-title">🎯 NUOVA SFIDA</div>
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">IL TUO PICK</div>
+    <div class="sf-my-pick" id="sf-my-pick" style="color:var(--purple2);">— Seleziona prima un giocatore —</div>
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">USERNAME AVVERSARIO</div>
+    <input class="sf-input" id="sf-friend" type="text" placeholder="Es: marco92">
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">MESSAGGIO (opzionale)</div>
+    <input class="sf-input" id="sf-msg" type="text" placeholder="Ti sfido! 💪">
+    <div class="sf-note">🏆 Sfida 100% gratuita · Solo punti e badge · Nessun pagamento · Compliance garantita</div>
+    <button class="btn-primary" onclick="sendSfida()">📨 INVIA SFIDA</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav id="mainNav" style="display:none;">
+  <button class="nav-btn active" onclick="switchPage('home',this)"><span class="nav-icon">🏠</span>HOME</button>
+  <button class="nav-btn" onclick="switchPage('live',this)"><span class="nav-icon">⚽</span>LIVE</button>
+  <button class="nav-btn" onclick="switchPage('sfide',this)"><span class="nav-icon">🎯</span>SFIDE</button>
+  <button class="nav-btn" onclick="switchPage('classifica',this)"><span class="nav-icon">🏆</span>CLASS</button>
+  <button class="nav-btn" onclick="switchPage('profilo',this)"><span class="nav-icon">👤</span>PROFILO</button>
+</nav>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC615_dcwHNbORW0pOB6ahRHKbsWVnmlR8",
+  authDomain: "nexa-streak-master.firebaseapp.com",
+  projectId: "nexa-streak-master",
+  storageBucket: "nexa-streak-master.firebasestorage.app",
+  messagingSenderId: "70743347760",
+  appId: "1:70743347760:web:954c258d4c737fec91d3f5",
+  measurementId: "G-XXR883RR2L"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+const BACKEND = 'https://nexa-streak-master-production.up.railway.app';
+
+// ═══ STATE ═══
+let currentUser = null;
+let userData = null;
+let allMatches = [], currentTab = 'live', currentLeague = 'all';
+let selectedPlayer = null, currentPlayer = null, currentMatch = '';
+const pcache = {};
+
+// ═══ AUTH STATE ═══
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    await loadUserData(user);
+    showApp();
+  } else {
+    showAuth();
+  }
+});
+
+async function loadUserData(user) {
+  const ref = doc(db, 'users', user.uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    userData = snap.data();
+  } else {
+    userData = {
+      uid: user.uid,
+      displayName: user.displayName || user.email?.split('@')[0] || 'Player',
+      email: user.email,
+      photoURL: user.photoURL || null,
+      streak: 0,
+      maxStreak: 0,
+      points: 0,
+      totalPicks: 0,
+      correctPicks: 0,
+      lastPickDate: null,
+      lastPickPlayer: null,
+      createdAt: serverTimestamp()
+    };
+    await setDoc(ref, userData);
+  }
+  updateUI();
+}
+
+function updateUI() {
+  if (!userData) return;
+  const streak = userData.streak || 0;
+  const pts = userData.points || 0;
+  const wr = userData.totalPicks > 0 ? Math.round((userData.correctPicks/userData.totalPicks)*100) : 0;
+  // topbar
+  document.getElementById('tb-streak').textContent = `🔥 ${streak}`;
+  document.getElementById('tb-streak2').textContent = `🔥 ${streak}`;
+  document.getElementById('tb-streak3').textContent = `🔥 ${streak}`;
+  document.getElementById('tb-pts').textContent = `⚡ ${pts}`;
+  document.getElementById('tb-pts2').textContent = `⚡ ${pts}`;
+  // home
+  document.getElementById('h-streak').textContent = `🔥${streak}`;
+  document.getElementById('h-pts').textContent = pts;
+  // profilo
+  document.getElementById('prof-name').textContent = userData.displayName || 'Player';
+  document.getElementById('prof-email').textContent = userData.email || '';
+  document.getElementById('prof-streak').textContent = `🔥 ${streak}`;
+  document.getElementById('prof-pts').textContent = pts;
+  document.getElementById('prof-wr').textContent = `${wr}%`;
+  document.getElementById('prof-picks').textContent = userData.totalPicks || 0;
+  const level = getLevel(pts);
+  const levelName = getLevelName(level);
+  const maxPicks = getMaxPicks(level);
+  const progress = getLevelProgress(pts);
+  document.getElementById('prof-level').textContent = `⭐ Livello ${level} · ${levelName}`;
+  
+  // Aggiorna sezione livello nel profilo
+  const levelEl = document.getElementById('prof-level-section');
+  if (levelEl) {
+    levelEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--lime);">LVL ${level} · ${levelName}</span>
+        <span style="font-size:12px;color:var(--gold);font-weight:700;">${maxPicks} pick/giorno</span>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin-bottom:6px;">
+        <div style="height:100%;width:${progress.pct}%;background:linear-gradient(90deg,var(--purple),var(--lime));border-radius:4px;transition:width 0.5s;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);">${pts} / ${progress.next} punti · Prossimo livello</div>
+      ${getUnlockedFeatures(level).map(f=>`<div style="font-size:11px;color:var(--lime);margin-top:4px;">✓ ${f}</div>`).join('')}
+      ${level < 5 ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;">🔒 2 picks/giorno si sblocca al livello 5</div>` : ''}
+    `;
+  }
+  // avatar
+  if (userData.photoURL) {
+    document.getElementById('tb-avatar').innerHTML = `<img src="${userData.photoURL}">`;
+    document.getElementById('prof-av').innerHTML = `<img src="${userData.photoURL}">`;
+  }
+  // pick giornaliero
+  checkTodayPick();
+  updatePickButtons();
+  updateProfileSections();
+
+  // Shield status
+  const shieldEl = document.getElementById('shield-status');
+  if (shieldEl) {
+    if (userData.plan === 'pro') {
+      const shieldAvail = userData.shieldUsed !== getCurrentMonth();
+      shieldEl.style.display = 'block';
+      shieldEl.innerHTML = `<div style="background:${shieldAvail?'rgba(108,61,232,0.15)':'rgba(255,255,255,0.04)'};border:1px solid ${shieldAvail?'var(--purple2)':'var(--border)'};border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:24px;">${shieldAvail?'🛡️':'🔓'}</span>
+        <div>
+          <div style="font-weight:700;font-size:13px;color:${shieldAvail?'var(--purple2)':'var(--muted)'};">Streak Shield ${shieldAvail?'DISPONIBILE':'USATO'}</div>
+          <div style="font-size:11px;color:var(--muted);">${shieldAvail?'Protegge la tua streak questo mese':'Torna disponibile il mese prossimo'}</div>
+        </div>
+      </div>`;
+    } else if ((userData.streak || 0) >= 3) {
+      shieldEl.style.display = 'block';
+      shieldEl.innerHTML = `<div style="background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);border-radius:10px;padding:12px;text-align:center;cursor:pointer;" onclick="switchPage('pricing',null)">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);">🛡️ Streak ${userData.streak}🔥 a rischio!</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">Passa a PRO per proteggere la tua streak →</div>
+      </div>`;
+    } else {
+      shieldEl.style.display = 'none';
+    }
+  }
+}
+
+function checkTodayPick() {
+  const today = new Date().toDateString();
+  const wrap = document.getElementById('pick-done-wrap');
+  if (userData.lastPickDate === today && userData.lastPickPlayer) {
+    selectedPlayer = userData.lastPickPlayer;
+    updateBanner();
+    wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
+      <div class="pick-done-title">✓ PICK DI OGGI</div>
+      <div class="pick-done-sub">${userData.lastPickPlayer.name} · In attesa del risultato</div>
+      <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button>
+    </div>`;
+    // Verifica automatica ogni 3 minuti se c'è un pick attivo
+    if (!window.verifyInterval) {
+      window.verifyInterval = setInterval(verifyPick, 180000);
+    }
+  } else {
+    wrap.innerHTML = '';
+    if (window.verifyInterval) { clearInterval(window.verifyInterval); window.verifyInterval = null; }
+  }
+}
+
+window.verifyPick = async () => {
+  if (!userData?.lastPickPlayer || !currentUser) return;
+  const today = new Date().toDateString();
+  if (userData.lastPickDate !== today) return;
+  
+  const player = userData.lastPickPlayer;
+  const pickType = player.pickType || 'goal';
+  const basePts = player.points || PICK_POINTS[pickType] || 15;
+  const wrap = document.getElementById('pick-done-wrap');
+  
+  try {
+    wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
+      <div class="pick-done-title">⏳ VERIFICA IN CORSO...</div>
+      <div class="pick-done-sub">${player.name} · ${PICK_LABELS[pickType]||'Gol'}</div>
+    </div>`;
+    
+    const r = await fetch(`${BACKEND}/api/verify-pick/${player.id}?pickType=${pickType}`);
+    const result = await r.json();
+    
+    console.log('🔍 Verifica result:', result);
+    
+    if (result.status === 'finished') {
+      if (result.scored) {
+        const newStreak = (userData.streak || 0) + 1;
+        const streakBonus = newStreak * 2;
+        const pointsEarned = basePts + streakBonus;
+        const newPoints = (userData.points || 0) + pointsEarned;
+        const newCorrect = (userData.correctPicks || 0) + 1;
+        const newTotal = (userData.totalPicks || 0) + 1;
+        const newMax = Math.max(userData.maxStreak || 0, newStreak);
+        
+        const ref = doc(db, 'users', currentUser.uid);
+        await updateDoc(ref, {
+          streak: newStreak, maxStreak: newMax, points: newPoints,
+          correctPicks: newCorrect, totalPicks: newTotal,
+          lastPickDate: null, lastPickPlayer: null,
+          lastPickResult: { scored: true, player: player.name, pickType, points: pointsEarned, date: today }
+        });
+        userData.streak = newStreak; userData.points = newPoints;
+        userData.correctPicks = newCorrect; userData.totalPicks = newTotal;
+        userData.maxStreak = newMax; userData.lastPickDate = null; userData.lastPickPlayer = null;
+        selectedPlayer = null;
+        updateUI(); updateBanner();
+        
+        const emoji = pickType==='triple'?'🎉🎉🎉':pickType==='double'?'🎉🎉':'🎉';
+        wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;background:linear-gradient(135deg,rgba(57,255,20,0.25),rgba(57,255,20,0.1));">
+          <div class="pick-done-title">${emoji} ${player.name} · ${result.resultMsg||'INDOVINATO'}!</div>
+          <div class="pick-done-sub">+${pointsEarned} punti · Streak ${newStreak}🔥 · ${result.score}</div>
+        </div>`;
+        showToast(`${emoji} ${player.name} · ${result.resultMsg}! +${pointsEarned} punti!`);
+        if (window.verifyInterval) { clearInterval(window.verifyInterval); window.verifyInterval = null; }
+        setTimeout(() => { wrap.innerHTML = ''; }, 10000);
+        
+      } else {
+        // NON ha segnato - controlla Streak Shield
+        const newTotal = (userData.totalPicks || 0) + 1;
+        const hasShield = userData.plan === 'pro' && (userData.shieldUsed !== getCurrentMonth());
+        const ref = doc(db, 'users', currentUser.uid);
+
+        if (hasShield && (userData.streak || 0) > 0) {
+          // SHIELD ATTIVATO! Streak protetta
+          await updateDoc(ref, {
+            totalPicks: newTotal,
+            lastPickDate: null,
+            lastPickPlayer: null,
+            shieldUsed: getCurrentMonth(),
+            lastPickResult: { scored: false, shielded: true, player: player.name, date: today }
+          });
+          userData.totalPicks = newTotal;
+          userData.lastPickDate = null; userData.lastPickPlayer = null;
+          userData.shieldUsed = getCurrentMonth();
+          selectedPlayer = null;
+          updateUI(); updateBanner();
+
+          wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;background:linear-gradient(135deg,rgba(108,61,232,0.3),rgba(108,61,232,0.1));border-color:var(--purple2);">
+            <div class="pick-done-title" style="color:var(--purple2);">🛡️ STREAK SHIELD ATTIVATO!</div>
+            <div class="pick-done-sub">${player.name} non ha ${PICK_LABELS[pickType]||'segnato'} · Ma la tua streak di ${userData.streak}🔥 è protetta!</div>
+          </div>`;
+          showToast(`🛡️ Shield attivato! Streak ${userData.streak}🔥 salvata!`);
+        } else {
+          // Reset streak normale
+          await updateDoc(ref, {
+            streak: 0,
+            totalPicks: newTotal,
+            lastPickDate: null,
+            lastPickPlayer: null,
+            lastPickResult: { scored: false, player: player.name, date: today }
+          });
+          userData.streak = 0; userData.totalPicks = newTotal;
+          userData.lastPickDate = null; userData.lastPickPlayer = null;
+          selectedPlayer = null;
+          updateUI(); updateBanner();
+
+          const shieldMsg = userData.plan !== 'pro' && (userData.streak || 0) > 2
+            ? '<br>💡 Con il piano PRO avresti uno Streak Shield!'
+            : '';
+
+          wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;background:rgba(255,77,77,0.1);border-color:var(--red);">
+            <div class="pick-done-title" style="color:var(--red);">😔 ${player.name} · ${result.resultMsg||'Non ha segnato'}</div>
+            <div class="pick-done-sub">Streak resettata · ${result.score} · Riprova domani!${shieldMsg}</div>
+          </div>`;
+          showToast(`😔 ${player.name} non ha ${PICK_LABELS[pickType]||'segnato'}. Streak resettata.`);
+        }
+        if (window.verifyInterval) { clearInterval(window.verifyInterval); window.verifyInterval = null; }
+        setTimeout(() => { wrap.innerHTML = ''; }, 10000);
+      }
+    } else if (result.status === 'live') {
+      wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
+        <div class="pick-done-title">⚽ IN CORSO · ${result.score}</div>
+        <div class="pick-done-sub">${player.name} · ${result.minute}' · Gol segnati oggi: ${result.playerGoals}</div>
+        <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">🔄 AGGIORNA</button>
+      </div>`;
+    } else {
+      // Non ancora giocato
+      wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
+        <div class="pick-done-title">✓ PICK DI OGGI</div>
+        <div class="pick-done-sub">${player.name} · In attesa della partita</div>
+        <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">🔍 VERIFICA</button>
+      </div>`;
+    }
+  } catch(e) {
+    console.error('Verify error:', e);
+    wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
+      <div class="pick-done-title">✓ PICK DI OGGI</div>
+      <div class="pick-done-sub">${player.name} · Errore verifica, riprova</div>
+      <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">🔄 RIPROVA</button>
+    </div>`;
+  }
+};
+
+function showApp() {
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+  document.getElementById('mainNav').style.display = 'flex';
+  initApp();
+}
+
+function showAuth() {
+  document.getElementById('authPage').style.display = 'block';
+  document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('mainNav').style.display = 'none';
+}
+
+function initApp() {
+  const d = Math.ceil((new Date('2026-06-11') - new Date()) / 86400000);
+  document.getElementById('cd-days').textContent = d > 0 ? d : '🎉';
+  loadLiveCount();
+  loadTab('live');
+  loadLeaderboard();
+  loadSfide();
+  setTimeout(() => {
+    updateNotifButton();
+    initPushNotifications();
+  }, 500);
+}
+
+async function loadLiveCount() {
+  try {
+    const r = await fetch(`${BACKEND}/api/matches/live`);
+    const d = await r.json();
+    document.getElementById('h-live').textContent = d.length;
+  } catch(e) {}
+}
+
+// ═══ AUTH FUNCTIONS ═══
+window.setAuthTab = (tab, btn) => {
+  document.querySelectorAll('.auth-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('auth-name-wrap').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('auth-email-btn').textContent = tab==='register' ? 'REGISTRATI' : 'ACCEDI';
+  document.getElementById('auth-err').style.display = 'none';
+};
+
+window.authWithEmail = async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  const isRegister = document.getElementById('auth-name-wrap').style.display !== 'none';
+  const errEl = document.getElementById('auth-err');
+  errEl.style.display = 'none';
+  if (!email || !pass) { errEl.textContent='Inserisci email e password'; errEl.style.display='block'; return; }
+  try {
+    if (isRegister) {
+      const name = document.getElementById('auth-name').value.trim() || email.split('@')[0];
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: name });
+    } else {
+      await signInWithEmailAndPassword(auth, email, pass);
+    }
+  } catch(e) {
+    errEl.textContent = e.code==='auth/wrong-password'?'Password errata':e.code==='auth/user-not-found'?'Utente non trovato':e.code==='auth/email-already-in-use'?'Email già in uso':'Errore: '+e.message;
+    errEl.style.display = 'block';
+  }
+};
+
+window.authWithGoogle = async () => {
+  try { await signInWithPopup(auth, googleProvider); }
+  catch(e) { console.error(e); }
+};
+
+window.logout = async () => {
+  await signOut(auth);
+  selectedPlayer = null;
+  allMatches = [];
+};
+
+// ═══ TABS ═══
+window.setTab = (tab, btn) => {
+  currentTab = tab; currentLeague = 'all';
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadTab(tab);
+};
+
+async function loadTab(tab) {
+  document.getElementById('mlist').innerHTML = '<div class="ldwrap"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div>';
+  try {
+    const r = await fetch(`${BACKEND}/api/matches/${tab}`);
+    allMatches = await r.json();
+  } catch(e) { allMatches = []; }
+  buildLeagueSel();
+  renderMatches(allMatches);
+}
+
+function buildLeagueSel() {
+  const leagues = [...new Set(allMatches.map(m=>m.league.name))].sort();
+  document.getElementById('leagueSel').innerHTML =
+    `<option value="all">🌍 Tutti (${allMatches.length})</option>` +
+    leagues.map(l=>`<option value="${l}">${l} (${allMatches.filter(m=>m.league.name===l).length})</option>`).join('');
+}
+
+window.filterLeague = () => {
+  currentLeague = document.getElementById('leagueSel').value;
+  renderMatches(currentLeague==='all' ? allMatches : allMatches.filter(m=>m.league.name===currentLeague));
+};
+
+function renderMatches(matches) {
+  if (!matches.length) {
+    document.getElementById('mlist').innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div>Nessuna partita</div></div>';
+    return;
+  }
+  document.getElementById('mlist').innerHTML = matches.map(m => {
+    const live = ['1H','2H','HT','ET'].includes(m.status);
+    const t = m.date ? new Date(m.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}) : '';
+    const badge = live ? `<span class="badge-live"><span class="live-dot"></span>${m.minute||'?'}'</span>`
+      : m.status==='HT' ? `<span class="badge-ht">⏸ HT</span>`
+      : `<span class="badge-ns">${t}</span>`;
+    const score = live || m.status==='HT'
+      ? `<div class="mc-score">${m.home.goals??0} - ${m.away.goals??0}</div><div class="mc-min">⏱ ${m.minute}'</div>`
+      : `<div class="mc-time">${t}</div>`;
+    const goals = (m.events||[]).slice(0,3).map(e=>
+      `<div class="mc-goal-item"><span class="mc-gmin">${e.time?.elapsed}'</span><span>⚽ ${e.player?.name||'?'}</span></div>`
+    ).join('');
+    return `<div class="mcard">
+      <div class="mcard-top">
+        <div class="mc-league"><img class="mc-lg-logo" src="${m.league.logo||''}" onerror="this.style.display='none'"><span class="mc-lg-name">${m.league.name} · ${m.league.country}</span></div>
+        ${badge}
+      </div>
+      <div class="mc-teams">
+        <div class="mc-team"><img class="mc-logo" src="${m.home.logo}" onerror="this.src=''"><div class="mc-name">${m.home.name}</div></div>
+        <div class="mc-score-wrap">${score}</div>
+        <div class="mc-team"><img class="mc-logo" src="${m.away.logo}" onerror="this.src=''"><div class="mc-name">${m.away.name}</div></div>
+      </div>
+      ${goals?`<div class="mc-goals">${goals}</div>`:''}
+      <button class="btn-pl" id="bp_${m.id}" onclick="togglePl(${m.home.id},${m.away.id},${m.league.season||2025},'${esc(m.home.name)} vs ${esc(m.away.name)}','bp_${m.id}','pc_${m.id}')">🎯 VEDI GIOCATORI</button>
+      <div id="pc_${m.id}" style="display:none;" class="pl-section"></div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s){return(s||'').replace(/'/g,"\\'")}
+
+window.togglePl = async (hId,aId,season,matchName,btnId,contId) => {
+  const btn=document.getElementById(btnId), cont=document.getElementById(contId);
+  if(cont.style.display!=='none'){cont.style.display='none';btn.classList.remove('open');btn.innerHTML='🎯 VEDI GIOCATORI';return;}
+  btn.innerHTML='<div class="ldot"></div><div class="ldot"></div><div class="ldot"></div>';
+  btn.disabled=true;
+  const [hp,ap]=await Promise.all([getPlayers(hId,season),getPlayers(aId,season)]);
+  const names=matchName.split(' vs ');
+  cont.innerHTML=renderPl(hp,names[0]||'Casa',matchName)+renderPl(ap,names[1]||'Ospiti',matchName);
+  cont.style.display='block';btn.innerHTML='✕ NASCONDI';btn.classList.add('open');btn.disabled=false;
+};
+
+async function getPlayers(teamId,season){
+  const k=`${teamId}_${season}`;
+  if(pcache[k])return pcache[k];
+  try{const r=await fetch(`${BACKEND}/api/team/${teamId}/players?season=${season}`);const d=await r.json();pcache[k]=d;return d;}
+  catch(e){return[];}
+}
+
+function renderPl(players,teamName,matchName){
+  if(!players.length)return`<div class="pt-lbl">${teamName}</div><div style="font-size:12px;color:var(--muted);padding:8px 0;text-align:center;">Nessun dato</div>`;
+  return`<div class="pt-lbl">${teamName}</div>`+players.map(p=>{
+    const prob=calcP(p);
+    const rc=prob>=60?'rh':prob>=40?'rm':'rl';
+    const rt=prob>=60?'Alta':prob>=40?'Media':'Bassa';
+    const isSel=selectedPlayer&&selectedPlayer.id===p.id;
+    const isLk=selectedPlayer&&!isSel;
+    const isPickedToday = userData?.lastPickDate === new Date().toDateString() && userData?.lastPickPlayer?.id === p.id;
+    const ep=JSON.stringify(p).replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    const em=matchName.replace(/'/g,"\\'");
+    return`<div class="prow ${isSel||isPickedToday?'is-sel':''} ${isLk?'locked':''}"
+      onclick="${isLk?`showToast('Hai già scelto ${selectedPlayer.name}!')`:
+      `openModal(JSON.parse(this.dataset.p),this.dataset.m)`}"
+      data-p="${ep}" data-m="${em}">
+      <img class="p-photo ${isSel?'sel':''}" src="${p.photo||''}" onerror="this.src=''">
+      <div class="p-info">
+        <div class="p-name ${isSel?'sel':''}">${isSel?'✓ ':''}${p.name}</div>
+        <div class="p-sub">${p.position} · ⭐${parseFloat(p.rating||0).toFixed(1)} · ${p.league}</div>
+      </div>
+      <div class="p-right">
+        <span class="p-gol">⚽ ${p.goals}</span>
+        <span class="${rc}">${rt}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calcP(p){
+  let v=15;
+  if(p.goals>0)v+=Math.min(p.goals*5,30);
+  if(p.shots>2)v+=8; if(p.shotsOn>1)v+=7;
+  if(['Attacker','Forward'].includes(p.position))v+=20;
+  else if(p.position==='Midfielder')v+=8;
+  if(p.rating&&parseFloat(p.rating)>7.5)v+=10;
+  return Math.min(Math.max(v,10),90);
+}
+
+function calcOdds(prob){
+  const p=Math.max(prob,5)/100;
+  return{q1:(1/p).toFixed(2),q2:(1/(1-p+0.01)).toFixed(2),q3:(1/(p*0.25)).toFixed(2)};
+}
+
+window.openModal = (player, matchName) => {
+  currentPlayer=player; currentMatch=matchName;
+  const prob=calcP(player), odds=calcOdds(prob);
+  const gpg=player.appearances>0?(player.goals/player.appearances).toFixed(2):'0.00';
+  document.getElementById('m-photo').src=player.photo||'';
+  document.getElementById('m-name').textContent=player.name;
+  document.getElementById('m-meta').textContent=`${player.nationality||'?'} · ${player.age||'?'} anni · ${player.league}`;
+  document.getElementById('m-bdg').innerHTML=`<span class="mpb mpb-p">${player.position||'?'}</span><span class="mpb mpb-r">⭐ ${parseFloat(player.rating||0).toFixed(1)}</span>`;
+  document.getElementById('m-pval').textContent=prob+'%';
+  setTimeout(()=>document.getElementById('m-pfill').style.width=prob+'%',50);
+  document.getElementById('m-match').textContent=matchName;
+  const rc=prob>=60?'var(--lime)':prob>=40?'var(--gold)':'var(--red)';
+  const rl=prob>=60?'🟢 Alta':prob>=40?'🟡 Media':'🔴 Bassa';
+  document.getElementById('m-risk').innerHTML=`<span style="color:${rc};font-weight:700;">${rl}</span>`;
+  document.getElementById('m-g').textContent=player.goals||0;
+  document.getElementById('m-a').textContent=player.assists||0;
+  document.getElementById('m-s').textContent=`${player.shots||0}(${player.shotsOn||0})`;
+  document.getElementById('m-p').textContent=player.passes||0;
+  document.getElementById('m-min').textContent=(player.minutes||0)+"'";
+  document.getElementById('m-apps').textContent=player.appearances||0;
+  document.getElementById('m-gpg').textContent=gpg;
+  document.getElementById('m-q1').textContent=odds.q1;
+  document.getElementById('m-q2').textContent=odds.q2;
+  document.getElementById('m-q3').textContent=odds.q3;
+  // Storico
+  document.getElementById('m-ghbar').innerHTML='<span style="color:var(--muted);font-size:11px;">⏳ Caricamento...</span>';
+  document.getElementById('m-ghrows').innerHTML='';
+  fetch(`${BACKEND}/api/player/${player.id}/history?season=2025`).then(r=>r.json()).then(hist=>{
+    if(hist&&hist.length>0){
+      document.getElementById('m-ghbar').innerHTML=hist.map(h=>`<div class="ghitem ${h.goals>0?'gh-g':'gh-n'}">${h.goals>0?'⚽':'✗'}</div>`).join('');
+      document.getElementById('m-ghrows').innerHTML=hist.map(h=>{
+        const d=new Date(h.date).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+        const rc2=h.result==='W'?'var(--lime)':h.result==='D'?'var(--gold)':'var(--red)';
+        return`<div class="ghrow"><span class="gh-mt">${d} · ${h.home} vs ${h.away}</span><div style="display:flex;gap:5px;align-items:center;"><span style="color:${rc2};font-size:10px;font-weight:700;background:rgba(255,255,255,0.06);padding:2px 5px;border-radius:4px;">${h.result} ${h.score}</span><span class="${h.goals>0?'ghw':'ghl'}">${h.goals>0?`⚽ GOL`:'✗'}</span></div></div>`;
+      }).join('');
+    } else {
+      document.getElementById('m-ghbar').innerHTML='<span style="color:var(--muted);font-size:11px;">Storico non disponibile</span>';
+    }
+  }).catch(()=>{document.getElementById('m-ghbar').innerHTML='<span style="color:var(--muted);font-size:11px;">Errore caricamento</span>';});
+  // Button
+  const btn=document.getElementById('m-selbtn');
+  const today=new Date().toDateString();
+  const alreadyPicked = userData?.lastPickDate === today;
+  if(selectedPlayer&&selectedPlayer.id===player.id&&alreadyPicked){
+    btn.textContent='✅ PICK CONFERMATO';btn.className='btn-sel';btn.style.background='linear-gradient(135deg,#2de010,#39ff14)';btn.style.color='#080b1a';
+  } else if(selectedPlayer&&selectedPlayer.id===player.id){
+    btn.textContent='✕ DESELEZIONA';btn.className='btn-sel btn-desel';btn.style.background='';btn.style.color='';
+  } else if(alreadyPicked){
+    btn.textContent='✓ PICK FATTO OGGI';btn.className='btn-sel btn-dis';btn.style.background='';btn.style.color='';
+  } else if(selectedPlayer){
+    btn.textContent='❌ CAMBIA PRIMA IL PICK';btn.className='btn-sel btn-dis';btn.style.background='';btn.style.color='';
+  } else {
+    btn.textContent=`✓ SELEZIONA · ${PICK_LABELS[window.currentPickType]||'Gol'} (+${PICK_POINTS[window.currentPickType]||15}pts)`;btn.className='btn-sel';btn.style.background='';btn.style.color='';
+  }
+  document.getElementById('playerModal').classList.add('open');
+  document.body.classList.add('modal-open');
+  updatePickButtons();
+};
+
+window.closeModal = () => {
+  document.getElementById('playerModal').classList.remove('open');
+  document.body.classList.remove('modal-open');
+  setTimeout(()=>document.getElementById('m-pfill').style.width='0%',300);
+};
+
+window.confirmSel = async () => {
+  if(!currentPlayer||!currentUser) return;
+  const today=new Date().toDateString();
+  const alreadyPicked = userData?.lastPickDate === today;
+  if(alreadyPicked){showToast('Hai già fatto il pick di oggi!');return;}
+  if(selectedPlayer&&selectedPlayer.id===currentPlayer.id){
+    selectedPlayer=null;
+    const ref=doc(db,'users',currentUser.uid);
+    await updateDoc(ref,{lastPickPlayer:null,lastPickDate:null});
+    userData.lastPickPlayer=null; userData.lastPickDate=null;
+    updateBanner();
+    document.getElementById('playerModal').classList.remove('open');
+    document.body.classList.remove('modal-open');
+    showToast('🔄 Pick annullato');reRender();
+    document.getElementById('pick-done-wrap').innerHTML='';
+    return;
+  }
+  if(selectedPlayer){showToast('Prima deseleziona '+selectedPlayer.name);return;}
+  selectedPlayer=currentPlayer;
+  const pickData = { ...currentPlayer, pickType: window.currentPickType, points: PICK_POINTS[window.currentPickType] };
+  const ref=doc(db,'users',currentUser.uid);
+  await updateDoc(ref,{lastPickPlayer:pickData,lastPickDate:today});
+  userData.lastPickPlayer=pickData; userData.lastPickDate=today;
+  updateBanner();
+  document.getElementById('playerModal').classList.remove('open');
+  document.body.classList.remove('modal-open');
+  showToast(`✓ ${selectedPlayer.name} · ${PICK_LABELS[window.currentPickType]}! 🍀`);
+  reRender();
+  document.getElementById('pick-done-wrap').innerHTML=`<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${selectedPlayer.name} · ${PICK_LABELS[window.currentPickType]} · +${PICK_POINTS[window.currentPickType]} pts se indovini</div><button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button></div>`;
+  if (!window.verifyInterval) { window.verifyInterval = setInterval(verifyPick, 180000); }
+};
+
+window.clearSel = async () => {
+  // Solo Premium/PRO possono cambiare il pick
+  if (userData?.plan !== 'premium' && userData?.plan !== 'pro') {
+    showToast('🔒 Solo Premium può cambiare il pick! 👑');
+    // Mostra banner upgrade
+    const wrap = document.getElementById('pick-done-wrap');
+    if (wrap) {
+      const extra = document.createElement('div');
+      extra.style.cssText = 'background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);border-radius:10px;padding:10px;margin:8px 16px 0;text-align:center;cursor:pointer;max-width:calc(480px - 32px);margin-left:auto;margin-right:auto;';
+      extra.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--gold);">👑 Vuoi cambiare il pick? Passa a Premium!</div>`;
+      extra.onclick = () => switchPage('pricing', null);
+      wrap.appendChild(extra);
+      setTimeout(() => extra.remove(), 4000);
+    }
+    return;
+  }
+  selectedPlayer = null;
+  if (currentUser) {
+    const ref = doc(db, 'users', currentUser.uid);
+    await updateDoc(ref, { lastPickPlayer: null, lastPickDate: null });
+    userData.lastPickPlayer = null; userData.lastPickDate = null;
+  }
+  updateBanner(); showToast('🔄 Pick cambiato!'); reRender();
+  document.getElementById('pick-done-wrap').innerHTML = '';
+};
+
+function updateBanner(){
+  const b=document.getElementById('sel-banner');
+  const changeBtn=document.getElementById('sel-change-btn');
+  if(selectedPlayer){
+    document.getElementById('sel-name').textContent=selectedPlayer.name;
+    b.classList.add('show');
+    // Mostra lucchetto per utenti Free
+    if(changeBtn){
+      const isPremium = userData?.plan==='premium'||userData?.plan==='pro';
+      changeBtn.textContent = isPremium ? '✕ Cambia' : '🔒 Premium';
+      changeBtn.style.opacity = isPremium ? '1' : '0.7';
+    }
+  } else {
+    b.classList.remove('show');
+  }
+}
+
+function reRender(){
+  document.querySelectorAll('.prow').forEach(row=>{
+    try{
+      const p=JSON.parse(row.dataset.p||'{}');if(!p.id)return;
+      const iS=selectedPlayer&&selectedPlayer.id===p.id;
+      const iL=selectedPlayer&&!iS;
+      row.className=`prow ${iS?'is-sel':''} ${iL?'locked':''}`;
+      const nm=row.querySelector('.p-name');if(nm){nm.className=`p-name ${iS?'sel':''}`;nm.textContent=(iS?'✓ ':'')+p.name;}
+      const ph=row.querySelector('.p-photo');if(ph)ph.className=`p-photo ${iS?'sel':''}`;
+    }catch(e){}
+  });
+}
+
+// ═══ SFIDE ═══
+window.openSfidaModal = () => {
+  const el=document.getElementById('sf-my-pick');
+  if(selectedPlayer){el.innerHTML=`✓ ${selectedPlayer.name} · ${selectedPlayer.position} · ⚽ ${selectedPlayer.goals} gol`;el.style.color='var(--lime)';}
+  else{el.innerHTML='⚠️ Prima seleziona un giocatore dal LIVE';el.style.color='var(--gold)';}
+  document.getElementById('sfidaModal').classList.add('open');
+  document.body.classList.add('modal-open');
+};
+
+window.sendSfida = async () => {
+  if(!selectedPlayer){showToast('⚠️ Prima seleziona un giocatore!');document.getElementById('sfidaModal').classList.remove('open');document.body.classList.remove('modal-open');switchPage('live',null);return;}
+  const friend=document.getElementById('sf-friend').value.trim();
+  if(!friend){showToast('⚠️ Inserisci username avversario!');return;}
+  const msg=document.getElementById('sf-msg').value.trim();
+  await addDoc(collection(db,'sfide'),{
+    createdBy: currentUser.uid,
+    createdByName: userData.displayName,
+    createdByPlayer: selectedPlayer,
+    opponentUsername: friend,
+    message: msg,
+    status: 'pending',
+    createdAt: serverTimestamp()
+  });
+  document.getElementById('sfidaModal').classList.remove('open');
+  document.body.classList.remove('modal-open');
+  document.getElementById('sf-friend').value='';
+  document.getElementById('sf-msg').value='';
+  showToast(`✓ Sfida inviata a ${friend}! 🎯`);
+  loadSfide();
+};
+
+async function loadSfide(){
+  if(!currentUser)return;
+  try{
+    const q=query(collection(db,'sfide'),where('createdBy','==',currentUser.uid));
+    const snap=await getDocs(q);
+    const sfide=[];
+    snap.forEach(d=>sfide.push({id:d.id,...d.data()}));
+    const attive=sfide.filter(s=>s.status==='pending');
+    const comp=sfide.filter(s=>s.status!=='pending');
+    document.getElementById('sfide-attive').innerHTML=attive.length?
+      attive.map(s=>`<div class="sf-card"><div class="sf-vs">🎮 VS ${s.opponentUsername}</div><div class="sf-detail">Tu: ${s.createdByPlayer?.name||'?'}${s.message?` · "${s.message}"`:''}</div><div class="sf-foot"><span class="sf-status s-act">⏳ IN ATTESA</span></div></div>`).join(''):
+      '<div style="color:var(--muted);font-size:12px;padding:10px 0;">Nessuna sfida attiva</div>';
+    document.getElementById('sfide-completate').innerHTML=comp.length?
+      comp.map(s=>`<div class="sf-card"><div class="sf-vs">VS ${s.opponentUsername}</div><div class="sf-detail">${s.createdByPlayer?.name||'?'}</div><div class="sf-foot"><span class="sf-status ${s.result==='win'?'s-win':'s-loss'}">${s.result==='win'?'✓ VINTO':'✗ PERSO'}</span></div></div>`).join(''):
+      '<div style="color:var(--muted);font-size:12px;padding:10px 0;">Nessuna sfida completata</div>';
+  }catch(e){console.error(e);}
+}
+
+// ═══ LEADERBOARD ═══
+async function loadLeaderboard(){
+  try{
+    const q=query(collection(db,'users'),orderBy('points','desc'),limit(10));
+    const snap=await getDocs(q);
+    const users=[];
+    snap.forEach(d=>users.push({id:d.id,...d.data()}));
+    const medals=['🥇','🥈','🥉'];
+    const colors=['#ffd700','var(--lime)','#cd7f32'];
+    document.getElementById('leaderboard-wrap').innerHTML=users.map((u,i)=>{
+      const isMe=u.uid===currentUser?.uid;
+      return`<div class="lb-row ${isMe?'me':''}">
+        <div class="lb-rank" style="color:${i<3?colors[i]:'var(--muted)'};">${i<3?medals[i]:i+1}</div>
+        <div class="lb-av">${u.photoURL?`<img src="${u.photoURL}">`:'👤'}</div>
+        <div style="flex:1;"><div class="lb-name" style="${isMe?'color:var(--lime);':''}">${u.displayName||'Player'}${isMe?' (Tu)':''}</div><div class="lb-streak">🔥 Streak ${u.streak||0}</div></div>
+        <div class="lb-pts">${u.points||0}</div>
+      </div>`;
+    }).join('') || '<div style="color:var(--muted);padding:20px;text-align:center;">Nessun giocatore ancora</div>';
+  }catch(e){console.error(e);}
+}
+
+// ═══ PAGE SWITCH ═══
+window.switchPage = (id, btn) => {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else {
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const pages = ['home','live','sfide','classifica','profilo'];
+    const idx = pages.indexOf(id);
+    if(idx>=0)navBtns[idx].classList.add('active');
+  }
+  if(id==='classifica')loadLeaderboard();
+  if(id==='sfide')loadSfide();
+  if(id==='profilo')updateNotifButton();
+  // Interstitial discreto (solo tra pagine principali, non su live/home)
+  if(['sfide','classifica'].includes(id)) maybeShowInterstitial();
+};
+
+// ═══ TOAST ═══
+window.showToast = (msg) => {
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+};
+
+// PICK TYPE con controllo livello
+const PICK_LEVEL_REQ = { goal: 1, assist: 2, double: 3, triple: 7 };
+window.currentPickType = 'goal';
+
+window.handlePickType = (type, btn) => {
+  const level = getLevel(userData?.points || 0);
+  const req = PICK_LEVEL_REQ[type] || 1;
+  if (level < req) {
+    showToast(`🔒 Sblocca al livello ${req}! Ora sei LVL ${level}`);
+    return;
+  }
+  setPickType(type, btn);
+};
+
+// Aggiorna stato bottoni pick in base al livello
+function updatePickButtons() {
+  const level = getLevel(userData?.points || 0);
+  const maxPicks = getMaxPicks(level);
+  const picks = userData?.todayPicks || 0;
+
+  Object.entries(PICK_LEVEL_REQ).forEach(([type, req]) => {
+    const btn = document.getElementById(`btn-${type}`);
+    const lbl = document.getElementById(`${type}-lbl`);
+    if (!btn) return;
+    if (level < req) {
+      btn.style.opacity = '0.4';
+      btn.style.filter = 'grayscale(1)';
+      if (lbl) { lbl.textContent = `🔒 LVL ${req}`; lbl.style.color = 'var(--red)'; }
+    } else {
+      btn.style.opacity = '1';
+      btn.style.filter = 'none';
+      if (lbl) { lbl.textContent = `+${PICK_POINTS[type]} pts ✓`; lbl.style.color = 'var(--lime)'; }
+    }
+  });
+
+  const slotsEl = document.getElementById('pick-slots-info');
+  if (slotsEl) {
+    const used = Array.isArray(userData?.todayPicks) ? userData.todayPicks.length : (userData?.lastPickDate === new Date().toDateString() ? 1 : 0);
+    slotsEl.innerHTML = `🎮 Picks oggi: <strong style="color:var(--lime);">${used}/${maxPicks}</strong> · LVL ${level} ${getLevelName(level)}`;
+  }
+}
+window.PICK_POINTS = { goal: 15, assist: 12, double: 35, triple: 75, goal_assist: 25 };
+window.PICK_LABELS = { goal: '⚽ Gol', assist: '🎯 Assist', double: '⚽⚽ Doppietta', triple: '⚽⚽⚽ Tripletta' };
+const PICK_POINTS = window.PICK_POINTS;
+const PICK_LABELS = window.PICK_LABELS;
+
+// ═══ SISTEMA LIVELLI ═══
+function getLevel(points) {
+  if (points < 100) return 1;
+  if (points < 250) return 2;
+  if (points < 500) return 3;
+  if (points < 1000) return 4;
+  if (points < 2000) return 5;
+  if (points < 3500) return 6;
+  if (points < 5000) return 7;
+  if (points < 7500) return 8;
+  if (points < 10000) return 9;
+  if (points < 15000) return 10;
+  if (points < 20000) return 15;
+  return 20;
+}
+
+function getMaxPicks(level) {
+  if (level >= 20) return 4;
+  if (level >= 10) return 3;
+  if (level >= 5) return 2;
+  return 1;
+}
+
+function getLevelName(level) {
+  const names = {1:'Rookie',2:'Dilettante',3:'Amatore',4:'Semi-Pro',5:'Pro',
+    6:'Expert',7:'Master',8:'Elite',9:'Legend',10:'Champion',15:'Grand Master',20:'GOAT'};
+  return names[level] || 'Pro';
+}
+
+function getLevelProgress(points) {
+  const thresholds = [0,100,250,500,1000,2000,3500,5000,7500,10000,15000,20000];
+  const level = getLevel(points);
+  const idx = Math.min(level, thresholds.length - 2);
+  const current = thresholds[idx];
+  const next = thresholds[idx + 1] || thresholds[idx] * 1.5;
+  const pct = Math.min(((points - current) / (next - current)) * 100, 100);
+  return { pct: Math.round(pct), next, current };
+}
+
+function getUnlockedFeatures(level) {
+  const features = [];
+  if (level >= 2) features.push('🎯 Assist pick sbloccato');
+  if (level >= 3) features.push('⚽⚽ Doppietta pick sbloccata');
+  if (level >= 5) features.push('🎮 2 picks al giorno');
+  if (level >= 7) features.push('⚽⚽⚽ Tripletta pick sbloccata');
+  if (level >= 10) features.push('🎮 3 picks al giorno');
+  if (level >= 20) features.push('🎮 4 picks al giorno');
+  return features;
+}
+
+window.setPickType = (type, btn) => {
+  window.currentPickType = type;
+  document.querySelectorAll('.pick-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const pts = PICK_POINTS[type];
+  const btn2 = document.getElementById('m-selbtn');
+  if (btn2 && !btn2.classList.contains('btn-dis') && !btn2.classList.contains('btn-desel')) {
+    btn2.textContent = `✓ SELEZIONA · ${PICK_LABELS[type]} (+${pts}pts)`;
+  }
+};
+function getCurrentMonth() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}`;
+}
+
+function updateProfileSections() {
+  if (!userData) return;
+  const level = getLevel(userData.points || 0);
+  const streak = userData.streak || 0;
+  const correct = userData.correctPicks || 0;
+  const total = userData.totalPicks || 0;
+
+  // ── ULTIMO PICK ──
+  const lastPickSec = document.getElementById('last-pick-section');
+  const lastPickCard = document.getElementById('last-pick-card');
+  if (userData.lastPickResult && lastPickSec && lastPickCard) {
+    lastPickSec.style.display = 'block';
+    const r = userData.lastPickResult;
+    const scored = r.scored;
+    lastPickCard.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:28px;">${scored ? '✅' : '❌'}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:13px;color:${scored?'var(--lime)':'var(--red)'};">${r.player||'?'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${r.pickType?window.PICK_LABELS[r.pickType]||'Gol':'Gol'} · ${scored?`+${r.points||15} punti`:'Nessun punto'}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:1px;">${r.date||''}</div>
+        </div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:20px;color:${scored?'var(--lime)':'var(--red)'};">${scored?`+${r.points||15}`:'0'}</div>
+      </div>`;
+  } else if (userData.lastPickDate === new Date().toDateString() && userData.lastPickPlayer && lastPickSec && lastPickCard) {
+    lastPickSec.style.display = 'block';
+    const p = userData.lastPickPlayer;
+    lastPickCard.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:28px;">⏳</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:13px;color:var(--gold);">${p.name||'?'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${window.PICK_LABELS[p.pickType]||'⚽ Gol'} · In attesa del risultato</div>
+        </div>
+        <div style="font-size:11px;color:var(--gold);font-weight:700;">OGGI</div>
+      </div>`;
+  }
+
+  // ── SISTEMA SBLOCCHI ──
+  const unlockSec = document.getElementById('unlock-section');
+  if (!unlockSec) return;
+
+  const unlocks = [
+    { id:'assist', icon:'🎯', name:'Assist Pick', desc:'Streak 3 consecutivi', req: streak >= 3, type:'badge', reqVal: 3, reqType:'streak' },
+    { id:'double', icon:'⚽⚽', name:'Doppietta Pick', desc:'Streak 7 consecutivi', req: streak >= 7, type:'badge', reqVal: 7, reqType:'streak' },
+    { id:'multi2', icon:'🎮', name:'2 Picks/giorno', desc:'Livello 5', req: level >= 5, type:'badge', reqVal: 5, reqType:'level' },
+    { id:'triple', icon:'⚽⚽⚽', name:'Tripletta Pick', desc:'Piano Premium', req: userData.plan === 'premium' || userData.plan === 'pro', type:'premium' },
+    { id:'multi3', icon:'🎮🎮', name:'3 Picks/giorno', desc:'Piano Premium', req: userData.plan === 'premium' || userData.plan === 'pro', type:'premium' },
+    { id:'shield', icon:'🛡️', name:'Streak Shield', desc:'Piano PRO', req: userData.plan === 'pro', type:'pro' },
+    { id:'multi4', icon:'🎮🎮🎮', name:'4 Picks/giorno', desc:'Piano PRO', req: userData.plan === 'pro', type:'pro' },
+  ];
+
+  unlockSec.innerHTML = unlocks.map(u => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:${u.req?'rgba(57,255,20,0.07)':'var(--card)'};border:1px solid ${u.req?'var(--lime)':'var(--border)'};border-radius:10px;margin-bottom:6px;">
+      <span style="font-size:22px;">${u.icon}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:${u.req?'var(--lime)':'var(--text)'};">${u.name}</div>
+        <div style="font-size:11px;color:var(--muted);">${u.desc}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:${u.req?'rgba(57,255,20,0.2)':u.type==='badge'?'rgba(108,61,232,0.2)':'rgba(245,166,35,0.2)'};color:${u.req?'var(--lime)':u.type==='badge'?'var(--purple2)':'var(--gold)'};">
+        ${u.req ? '✓ SBLOCCATO' : u.type==='badge' ? '🔒 BADGE' : u.type==='premium' ? '👑 PREMIUM' : '👑 PRO'}
+      </div>
+    </div>`).join('');
+
+  // ── BADGE ──
+  const allBadges = [
+    { em:'⚡', lbl:'First Win', desc:'Prima vittoria', req: correct >= 1 },
+    { em:'🔥', lbl:'Streak 3', desc:'3 picks consecutivi', req: streak >= 3 },
+    { em:'🎯', lbl:'Sniper', desc:'5 picks corretti', req: correct >= 5 },
+    { em:'🔥', lbl:'Streak 7', desc:'7 picks consecutivi', req: streak >= 7 },
+    { em:'⭐', lbl:'LVL 5', desc:'Livello 5', req: level >= 5 },
+    { em:'💎', lbl:'Streak 10', desc:'10 picks consecutivi', req: streak >= 10 },
+    { em:'🏆', lbl:'Pro Player', desc:'50 picks corretti', req: correct >= 50 },
+    { em:'👑', lbl:'Leggenda', desc:'Streak 30', req: streak >= 30 },
+    { em:'🌍', lbl:'Globetrotter', desc:'5 leghe diverse', req: false },
+  ];
+
+  const badgesEl = document.getElementById('prof-badges');
+  if (badgesEl) {
+    badgesEl.innerHTML = allBadges.map(b => `
+      <div class="badge-box" style="${!b.req?'opacity:0.3;filter:grayscale(1);':''}">
+        <div class="badge-em">${b.em}</div>
+        <div class="badge-lbl">${b.lbl}</div>
+        <div class="badge-desc">${b.desc}</div>
+      </div>`).join('');
+  }
+}
+
+let pricingAnnual = false;
+window.togglePricing = () => {
+  pricingAnnual = !pricingAnnual;
+  const ball = document.getElementById('p-tball');
+  const mlbl = document.getElementById('p-mlbl');
+  const albl = document.getElementById('p-albl');
+  ball.style.left = pricingAnnual ? '25px' : '3px';
+  mlbl.style.color = pricingAnnual ? 'var(--muted)' : 'var(--text)';
+  albl.style.color = pricingAnnual ? 'var(--text)' : 'var(--muted)';
+  document.getElementById('p-prem-price').textContent = pricingAnnual ? '€2.99' : '€4.99';
+  document.getElementById('p-prem-period').textContent = pricingAnnual ? 'al mese · €35.88/anno' : 'al mese';
+  document.getElementById('p-pro-price').textContent = pricingAnnual ? '€5.99' : '€9.99';
+  document.getElementById('p-pro-period').textContent = pricingAnnual ? 'al mese · €71.88/anno' : 'al mese';
+};
+
+// Close modals on backdrop
+['playerModal','sfidaModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){
+    if(e.target===this){this.classList.remove('open');document.body.classList.remove('modal-open');}
+  });
+});
+
+// ═══════════════════════════════════════
+// 🔔 NOTIFICHE PUSH (Firebase Cloud Messaging)
+// ═══════════════════════════════════════
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging.js";
+
+let messaging = null;
+
+async function initPushNotifications() {
+  try {
+    messaging = getMessaging(app);
+
+    // Ascolta notifiche in foreground
+    onMessage(messaging, (payload) => {
+      console.log('📬 Notifica ricevuta:', payload);
+      const title = payload.notification?.title || 'NEXA Streak Master';
+      const body = payload.notification?.body || '';
+      showToast(`🔔 ${body}`);
+
+      // Mostra notifica browser
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body,
+          icon: '/icon-192.png',
+          badge: '/icon-72.png',
+          tag: 'nexa-pick',
+        });
+      }
+    });
+  } catch(e) {
+    console.log('FCM non disponibile:', e.message);
+  }
+}
+
+async function requestNotificationPermission() {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await getToken(messaging, {
+        vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBWssQLXoRounK4oPluwlzFJXe4NlEsVx7EtI'
+      });
+      if (token && currentUser) {
+        const ref = doc(db, 'users', currentUser.uid);
+        await updateDoc(ref, { fcmToken: token, notificationsEnabled: true });
+        userData.fcmToken = token;
+        userData.notificationsEnabled = true;
+        showToast('🔔 Notifiche attivate! Riceverai un alert quando il tuo pick segna!');
+      }
+    } else {
+      showToast('❌ Notifiche non autorizzate');
+    }
+  } catch(e) {
+    console.error('Notifiche error:', e);
+    showToast('❌ Impossibile attivare le notifiche su questo browser');
+  }
+}
+
+window.toggleNotifications = async () => {
+  if (!userData?.notificationsEnabled) {
+    await requestNotificationPermission();
+  } else {
+    const ref = doc(db, 'users', currentUser.uid);
+    await updateDoc(ref, { notificationsEnabled: false });
+    userData.notificationsEnabled = false;
+    showToast('🔕 Notifiche disattivate');
+  }
+  updateNotifButton();
+};
+
+function updateNotifButton() {
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  if (userData?.notificationsEnabled) {
+    btn.innerHTML = '🔔 Notifiche ON';
+    btn.style.background = 'rgba(57,255,20,0.15)';
+    btn.style.borderColor = 'var(--lime)';
+    btn.style.color = 'var(--lime)';
+  } else {
+    btn.innerHTML = '🔕 Attiva Notifiche';
+    btn.style.background = 'rgba(255,255,255,0.06)';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--text)';
+  }
+}
+
+// Init notifiche dopo login
+// ═══════════════════════════════════════
+// 📺 ADS SYSTEM - Google AdSense + Rewarded
+// ═══════════════════════════════════════
+
+// Config AdSense (inserisci il tuo publisher ID quando approvato)
+const ADS_CONFIG = {
+  publisherId: 'ca-pub-XXXXXXXXXXXXXXXX', // Da cambiare con il tuo ID AdSense
+  bannerSlot: 'XXXXXXXXXX',
+  rewardedSlot: 'XXXXXXXXXX',
+  interstitialSlot: 'XXXXXXXXXX',
+  enabled: false // Cambia in true quando AdSense è approvato
+};
+
+// Stato ads
+let adsState = {
+  rewardedPicksToday: 0,
+  rewardedShieldToday: false,
+  lastInterstitial: 0,
+  pageViews: 0,
+};
+
+// BANNER AD (discreto in fondo alle partite)
+function showBannerAd(containerId) {
+  if (!ADS_CONFIG.enabled) return;
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `
+    <div style="text-align:center;padding:8px;background:rgba(255,255,255,0.03);border-top:1px solid var(--border);font-size:10px;color:var(--muted);">
+      Pubblicità
+      <ins class="adsbygoogle" style="display:block;text-align:center;"
+        data-ad-client="${ADS_CONFIG.publisherId}"
+        data-ad-slot="${ADS_CONFIG.bannerSlot}"
+        data-ad-format="auto"></ins>
+    </div>`;
+  if (window.adsbygoogle) (adsbygoogle = window.adsbygoogle || []).push({});
+}
+
+// INTERSTITIAL AD (solo tra navigazioni, max 1 ogni 3 pagine)
+function maybeShowInterstitial() {
+  if (!ADS_CONFIG.enabled) return;
+  adsState.pageViews++;
+  const now = Date.now();
+  if (adsState.pageViews % 3 === 0 && now - adsState.lastInterstitial > 120000) {
+    adsState.lastInterstitial = now;
+    showInterstitialModal();
+  }
+}
+
+function showInterstitialModal() {
+  const modal = document.getElementById('adsInterstitial');
+  if (modal) { modal.classList.add('open'); document.body.classList.add('modal-open'); }
+}
+
+window.closeInterstitial = () => {
+  const modal = document.getElementById('adsInterstitial');
+  if (modal) { modal.classList.remove('open'); document.body.classList.remove('modal-open'); }
+};
+
+// REWARDED AD → sblocca pick extra
+window.watchAdForPick = () => {
+  if (!userData) return;
+  const level = getLevel(userData.points || 0);
+  const maxPicks = getMaxPicks(level);
+  const extraAllowed = 2; // max 2 pick extra con ads al giorno
+
+  if (adsState.rewardedPicksToday >= extraAllowed) {
+    showToast('Hai già guardato il massimo di video oggi!');
+    return;
+  }
+
+  if (!ADS_CONFIG.enabled) {
+    // Simulazione per test
+    simulateRewardedAd(() => {
+      adsState.rewardedPicksToday++;
+      userData.rewardedPicksToday = (userData.rewardedPicksToday || 0) + 1;
+      showToast(`✓ Pick extra sbloccato! (+${adsState.rewardedPicksToday} oggi)`);
+      document.getElementById('rewarded-ad-wrap')?.remove();
+    });
+    return;
+  }
+
+  // Real rewarded ad
+  showRewardedAd(() => {
+    adsState.rewardedPicksToday++;
+    userData.rewardedPicksToday = (userData.rewardedPicksToday || 0) + 1;
+    showToast(`✓ Pick extra sbloccato!`);
+  });
+};
+
+// REWARDED AD → sblocca Shield per oggi (senza PRO)
+window.watchAdForShield = () => {
+  if (adsState.rewardedShieldToday) {
+    showToast('Hai già sbloccato lo Shield oggi!');
+    return;
+  }
+  if (!ADS_CONFIG.enabled) {
+    simulateRewardedAd(() => {
+      adsState.rewardedShieldToday = true;
+      userData.tempShield = new Date().toDateString();
+      showToast('🛡️ Streak Shield sbloccato per oggi!');
+    });
+    return;
+  }
+  showRewardedAd(() => {
+    adsState.rewardedShieldToday = true;
+    userData.tempShield = new Date().toDateString();
+    showToast('🛡️ Streak Shield sbloccato per oggi!');
+  });
+};
+
+// SIMULAZIONE rewarded ad (per test, prima di avere AdSense approvato)
+function simulateRewardedAd(callback) {
+  const modal = document.getElementById('adsRewardedModal');
+  if (!modal) return;
+  let countdown = 5;
+  modal.classList.add('open');
+  document.body.classList.add('modal-open');
+  const el = document.getElementById('ads-countdown');
+  const interval = setInterval(() => {
+    countdown--;
+    if (el) el.textContent = countdown;
+    if (countdown <= 0) {
+      clearInterval(interval);
+      modal.classList.remove('open');
+      document.body.classList.remove('modal-open');
+      callback();
+    }
+  }, 1000);
+}
+
+function showRewardedAd(callback) {
+  // Integrazione reale AdSense Rewarded
+  if (!window.googletag) { simulateRewardedAd(callback); return; }
+  // TODO: implementare googletag rewarded quando AdSense approvato
+  simulateRewardedAd(callback);
+}
+</script>
+
+<!-- ═══ ADS MODALS ═══ -->
+
+<!-- REWARDED AD MODAL -->
+<div id="adsRewardedModal" class="modal">
+  <div class="modal-box" style="max-width:340px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:16px;">📺</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--lime);margin-bottom:8px;">GUARDA IL VIDEO</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Guarda un breve video per sbloccare il tuo pick extra o lo Streak Shield!</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:64px;color:var(--gold);font-weight:700;" id="ads-countdown">5</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;">secondi rimanenti...</div>
+    <div style="margin-top:16px;background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;font-size:11px;color:var(--muted);">
+      📺 Qui apparirà il video pubblicitario quando AdSense sarà attivo
+    </div>
+  </div>
+</div>
+
+<!-- INTERSTITIAL AD MODAL -->
+<div id="adsInterstitial" class="modal">
+  <div class="modal-box" style="max-width:340px;text-align:center;">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Pubblicità</div>
+    <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:40px 20px;margin-bottom:16px;font-size:12px;color:var(--muted);">
+      📺 Spazio pubblicitario AdSense
+    </div>
+    <button onclick="closeInterstitial()" style="width:100%;padding:12px;background:var(--purple);border:none;color:white;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:1px;">
+      CONTINUA →
+    </button>
+  </div>
+</div>
+
+<!-- ADS BANNER PLACEHOLDER (in fondo alle partite) -->
+<div id="ads-banner-bottom" style="display:none;"></div>
+
+<!-- PWA Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/pwa-sw.js');
+      console.log('✅ SW registrato:', reg.scope);
+    } catch(e) {
+      console.log('SW error:', e);
+    }
+  });
+}
+
+// Install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostra banner installa dopo 30 secondi
+  setTimeout(() => showInstallBanner(), 30000);
+});
+
+function showInstallBanner() {
+  if (!deferredPrompt) return;
+  const banner = document.createElement('div');
+  banner.id = 'install-banner';
+  banner.style.cssText = 'position:fixed;bottom:90px;left:16px;right:16px;background:linear-gradient(135deg,#1e2255,#161a45);border:1px solid #6c3de8;border-radius:14px;padding:14px;z-index:999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(108,61,232,0.4);max-width:448px;margin:0 auto;';
+  banner.innerHTML = `
+    <img src="/icon-192.png" style="width:44px;height:44px;border-radius:10px;">
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:13px;color:white;">Installa NEXA Streak Master</div>
+      <div style="font-size:11px;color:#6b7db3;margin-top:2px;">Aggiungila alla schermata Home!</div>
+    </div>
+    <button onclick="installApp()" style="background:#39ff14;color:#080b1a;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">INSTALLA</button>
+    <button onclick="document.getElementById('install-banner').remove()" style="background:none;border:none;color:#6b7db3;font-size:20px;cursor:pointer;padding:4px;">✕</button>
+  `;
+  document.body.appendChild(banner);
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const result = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner')?.remove();
+  if (result.outcome === 'accepted') {
+    console.log('✅ App installata!');
+  }
+}
+</script>
+</body>
+</html>

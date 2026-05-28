@@ -1076,8 +1076,25 @@ async function loadTab(tab) {
 function buildLeagueSel() {
   const leagues = [...new Set(allMatches.map(m=>m.league.name))].sort();
   document.getElementById('leagueSel').innerHTML =
-    `<option value="all">🌍 Tutti (${allMatches.length})</option>` +
-    leagues.map(l=>`<option value="${l}">${l} (${allMatches.filter(m=>m.league.name===l).length})</option>`).join('');
+    `<option value="all">🌍 Tutti (${allMatches.length})</option>
+    <option value="39">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
+    <option value="135">🇮🇹 Serie A</option>
+    <option value="140">🇪🇸 La Liga</option>
+    <option value="78">🇩🇪 Bundesliga</option>
+    <option value="61">🇫🇷 Ligue 1</option>
+    <option value="88">🇳🇱 Eredivisie</option>
+    <option value="94">🇵🇹 Primeira Liga</option>
+    <option value="2">⭐ Champions League</option>
+    <option value="3">🌍 Europa League</option>
+    <option value="848">🏆 Conference League</option>
+    <option value="137">🏆 Coppa Italia</option>
+    <option value="13">🏆 Copa Libertadores</option>
+    <option value="11">🏆 Copa Sudamericana</option>
+    <option value="71">🇧🇷 Brasileirao</option>
+    <option value="128">🇦🇷 Liga Argentina</option>
+    <option value="253">🇺🇸 MLS</option>
+    <option value="307">🇸🇦 Saudi Pro League</option>
+    <option value="1">🌍 Mondiali 2026</option>`;
 }
 
 window.filterLeague = () => {

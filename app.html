@@ -410,7 +410,7 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
         <option value="all">🌍 Tutti i campionati</option>
       </select>
     </div>
-    <div class="mlist" id="mlist"><div class="ldwrap"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div></div>
+    <div class="ls-wrap"><select class="ls-sel" id="leagueSel" onchange="filterLeague()"><option value="all">🌍 Tutti i campionati</option></select></div><div class="mlist" id="mlist"><div class="ldwrap"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div></div>
   </div>
 
   <!-- SFIDE -->
@@ -956,7 +956,7 @@ window.verifyPick = async () => {
         if (window.verifyInterval) { clearInterval(window.verifyInterval); window.verifyInterval = null; }
         setTimeout(() => { wrap.innerHTML = ''; }, 10000);
       }
-    } else if (result.status === 'live') {
+    } else if (result.status === 'not_found' || result.status === 'not_played') { wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${player.name} · Partita non ancora iniziata</div></div>`; } else if (result.status === 'live') {
       wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
         <div class="pick-done-title">⚽ IN CORSO · ${result.score}</div>
         <div class="pick-done-sub">${player.name} · ${result.minute}' · Gol segnati oggi: ${result.playerGoals}</div>

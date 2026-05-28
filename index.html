@@ -4,6 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>NEXA Streak Master</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#6c3de8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Streak Master">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Streak Master">
+
+<!-- SEO -->
+<meta name="description" content="Il gioco di prediction sul calcio LIVE. Scegli 1 giocatore, azzecca il gol, costruisci la tua streak!">
+<meta property="og:title" content="NEXA Streak Master">
+<meta property="og:description" content="Il gioco di prediction sul calcio LIVE. Ogni giorno 1 pick. Streak o reset.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1749,5 +1766,55 @@ function showRewardedAd(callback) {
 <!-- ADS BANNER PLACEHOLDER (in fondo alle partite) -->
 <div id="ads-banner-bottom" style="display:none;"></div>
 
+<!-- PWA Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/pwa-sw.js');
+      console.log('✅ SW registrato:', reg.scope);
+    } catch(e) {
+      console.log('SW error:', e);
+    }
+  });
+}
+
+// Install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostra banner installa dopo 30 secondi
+  setTimeout(() => showInstallBanner(), 30000);
+});
+
+function showInstallBanner() {
+  if (!deferredPrompt) return;
+  const banner = document.createElement('div');
+  banner.id = 'install-banner';
+  banner.style.cssText = 'position:fixed;bottom:90px;left:16px;right:16px;background:linear-gradient(135deg,#1e2255,#161a45);border:1px solid #6c3de8;border-radius:14px;padding:14px;z-index:999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(108,61,232,0.4);max-width:448px;margin:0 auto;';
+  banner.innerHTML = `
+    <img src="/icon-192.png" style="width:44px;height:44px;border-radius:10px;">
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:13px;color:white;">Installa NEXA Streak Master</div>
+      <div style="font-size:11px;color:#6b7db3;margin-top:2px;">Aggiungila alla schermata Home!</div>
+    </div>
+    <button onclick="installApp()" style="background:#39ff14;color:#080b1a;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">INSTALLA</button>
+    <button onclick="document.getElementById('install-banner').remove()" style="background:none;border:none;color:#6b7db3;font-size:20px;cursor:pointer;padding:4px;">✕</button>
+  `;
+  document.body.appendChild(banner);
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const result = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner')?.remove();
+  if (result.outcome === 'accepted') {
+    console.log('✅ App installata!');
+  }
+}
+</script>
 </body>
 </html>

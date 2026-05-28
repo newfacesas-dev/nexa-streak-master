@@ -1395,6 +1395,7 @@ window.showToast = (msg) => {
 
 // PICK TYPE con controllo livello
 const PICK_LEVEL_REQ = { goal: 1, assist: 2, double: 3, triple: 7 };
+window.currentPickType = 'goal';
 
 window.handlePickType = (type, btn) => {
   const level = getLevel(userData?.points || 0);
@@ -1433,8 +1434,10 @@ function updatePickButtons() {
     slotsEl.innerHTML = `🎮 Picks oggi: <strong style="color:var(--lime);">${used}/${maxPicks}</strong> · LVL ${level} ${getLevelName(level)}`;
   }
 }
-const PICK_POINTS = { goal: 15, assist: 12, double: 35, triple: 75, goal_assist: 25 };
-const PICK_LABELS = { goal: '⚽ Gol', assist: '🎯 Assist', double: '⚽⚽ Doppietta', triple: '⚽⚽⚽ Tripletta' };
+window.PICK_POINTS = { goal: 15, assist: 12, double: 35, triple: 75, goal_assist: 25 };
+window.PICK_LABELS = { goal: '⚽ Gol', assist: '🎯 Assist', double: '⚽⚽ Doppietta', triple: '⚽⚽⚽ Tripletta' };
+const PICK_POINTS = window.PICK_POINTS;
+const PICK_LABELS = window.PICK_LABELS;
 
 // ═══ SISTEMA LIVELLI ═══
 function getLevel(points) {

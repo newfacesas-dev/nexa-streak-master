@@ -41,6 +41,77 @@ app.get('/api/matches/live', async (req, res) => {
   } catch(e) { res.json([]); }
 });
 
+// ═══ MONDIALI 2026 (League ID: 1) =====
+app.get('/api/matches/worldcup', async (req, res) => {
+  try {
+    const c = gc('worldcup'); if (c) return res.json(c);
+    // Partite live Mondiali
+    const liveRes = await axios.get(`${BASE}/fixtures`, {
+      params: { live: 'all', league: 1, season: 2026 },
+      headers: H
+    });
+    // Partite di oggi Mondiali
+    const todayRes = await axios.get(`${BASE}/fixtures`, {
+      params: { league: 1, season: 2026, date: formatDate(new Date()) },
+      headers: H
+    });
+    const allMatches = [
+      ...(liveRes.data.response||[]),
+      ...(todayRes.data.response||[])
+    ];
+    // Rimuovi duplicati per ID
+    const unique = allMatches.filter((m, i, arr) =>
+      arr.findIndex(x => x.fixture.id === m.fixture.id) === i
+    );
+    const data = unique.map(mapFixture);
+    sc('worldcup', data);
+    console.log('✅ World Cup matches:', data.length);
+    res.json(data);
+  } catch(e) {
+    console.error('❌ worldcup:', e.message);
+    res.json([]);
+  }
+});
+
+// ═══ GRUPPI MONDIALI =====
+app.get('/api/worldcup/groups', async (req, res) => {
+  try {
+    const c = gc('wc_groups'); if (c) return res.json(c);
+    const r = await axios.get(`${BASE}/standings`, {
+      params: { league: 1, season: 2026 },
+      headers: H
+    });
+    const data = r.data.response || [];
+    sc('wc_groups', data);
+    res.json(data);
+  } catch(e) { res.json([]); }
+});
+
+// ═══ TOP SCORER MONDIALI =====
+app.get('/api/worldcup/topscorers', async (req, res) => {
+  try {
+    const c = gc('wc_top'); if (c) return res.json(c);
+    const r = await axios.get(`${BASE}/players/topscorers`, {
+      params: { league: 1, season: 2026 },
+      headers: H
+    });
+    const data = (r.data.response||[]).slice(0, 20).map(p => ({
+      id: p.player.id,
+      name: p.player.name,
+      photo: p.player.photo,
+      nationality: p.player.nationality,
+      goals: p.statistics[0]?.goals?.total || 0,
+      assists: p.statistics[0]?.goals?.assists || 0,
+      rating: p.statistics[0]?.games?.rating || null,
+      team: p.statistics[0]?.team?.name || '?',
+      teamLogo: p.statistics[0]?.team?.logo || ''
+    }));
+    sc('wc_top', data);
+    console.log('✅ WC top scorers:', data.length);
+    res.json(data);
+  } catch(e) { res.json([]); }
+});
+
 // ═══ OGGI ═══
 app.get('/api/matches/today', async (req, res) => {
   try {

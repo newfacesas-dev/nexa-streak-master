@@ -1223,7 +1223,7 @@ window.openModal = (player, matchName) => {
   } else if(selectedPlayer){
     btn.textContent='❌ CAMBIA PRIMA IL PICK';btn.className='btn-sel btn-dis';btn.style.background='';btn.style.color='';
   } else {
-    btn.textContent=`✓ SELEZIONA · ${PICK_LABELS[currentPickType]||'Gol'} (+${PICK_POINTS[currentPickType]||15}pts)`;btn.className='btn-sel';btn.style.background='';btn.style.color='';
+    btn.textContent=`✓ SELEZIONA · ${PICK_LABELS[window.currentPickType]||'Gol'} (+${PICK_POINTS[window.currentPickType]||15}pts)`;btn.className='btn-sel';btn.style.background='';btn.style.color='';
   }
   document.getElementById('playerModal').classList.add('open');
   document.body.classList.add('modal-open');
@@ -1255,16 +1255,16 @@ window.confirmSel = async () => {
   }
   if(selectedPlayer){showToast('Prima deseleziona '+selectedPlayer.name);return;}
   selectedPlayer=currentPlayer;
-  const pickData = { ...currentPlayer, pickType: currentPickType, points: PICK_POINTS[currentPickType] };
+  const pickData = { ...currentPlayer, pickType: window.currentPickType, points: PICK_POINTS[window.currentPickType] };
   const ref=doc(db,'users',currentUser.uid);
   await updateDoc(ref,{lastPickPlayer:pickData,lastPickDate:today});
   userData.lastPickPlayer=pickData; userData.lastPickDate=today;
   updateBanner();
   document.getElementById('playerModal').classList.remove('open');
   document.body.classList.remove('modal-open');
-  showToast(`✓ ${selectedPlayer.name} · ${PICK_LABELS[currentPickType]}! 🍀`);
+  showToast(`✓ ${selectedPlayer.name} · ${PICK_LABELS[window.currentPickType]}! 🍀`);
   reRender();
-  document.getElementById('pick-done-wrap').innerHTML=`<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${selectedPlayer.name} · ${PICK_LABELS[currentPickType]} · +${PICK_POINTS[currentPickType]} pts se indovini</div><button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button></div>`;
+  document.getElementById('pick-done-wrap').innerHTML=`<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${selectedPlayer.name} · ${PICK_LABELS[window.currentPickType]} · +${PICK_POINTS[window.currentPickType]} pts se indovini</div><button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button></div>`;
   if (!window.verifyInterval) { window.verifyInterval = setInterval(verifyPick, 180000); }
 };
 
@@ -1490,7 +1490,7 @@ function getUnlockedFeatures(level) {
 }
 
 window.setPickType = (type, btn) => {
-  currentPickType = type;
+  window.currentPickType = type;
   document.querySelectorAll('.pick-type-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const pts = PICK_POINTS[type];

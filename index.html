@@ -972,8 +972,10 @@ function initApp() {
   loadTab('live');
   loadLeaderboard();
   loadSfide();
-  // Notifiche e ads inizializzati dopo login
-  setTimeout(() => { updateNotifButton(); }, 500);
+  setTimeout(() => {
+    updateNotifButton();
+    initPushNotifications();
+  }, 500);
 }
 
 async function loadLiveCount() {
@@ -1577,17 +1579,6 @@ function updateNotifButton() {
 }
 
 // Init notifiche dopo login
-async function initApp() {
-  const d = Math.ceil((new Date('2026-06-11') - new Date()) / 86400000);
-  document.getElementById('cd-days').textContent = d > 0 ? d : '🎉';
-  loadLiveCount();
-  loadTab('live');
-  loadLeaderboard();
-  loadSfide();
-  await initPushNotifications();
-  updateNotifButton();
-}
-
 // ═══════════════════════════════════════
 // 📺 ADS SYSTEM - Google AdSense + Rewarded
 // ═══════════════════════════════════════

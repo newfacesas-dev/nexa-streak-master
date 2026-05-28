@@ -28,6 +28,11 @@
 body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; padding-bottom:80px; overflow-x:hidden; }
 body.modal-open { overflow:hidden; }
 
+/* CENTRA APP SU DESKTOP */
+#authPage, #appRoot { max-width:480px; margin:0 auto; position:relative; }
+nav { max-width:480px; left:50%; transform:translateX(-50%); }
+.toast { max-width:400px; }
+
 /* PAGES */
 .page { display:none; animation:fadeUp 0.25s ease; }
 .page.active { display:block; }
@@ -63,7 +68,7 @@ body.modal-open { overflow:hidden; }
 .auth-err { background:rgba(255,77,77,0.1); border:1px solid rgba(255,77,77,0.3); border-radius:8px; padding:10px 12px; font-size:12px; color:var(--red); margin-bottom:10px; display:none; }
 
 /* TOPBAR */
-.topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(8,11,26,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; max-width:480px; margin:0 auto; }
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(8,11,26,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; }
 .tb-logo { display:flex; align-items:center; gap:8px; }
 .tb-logo-icon { width:30px; height:30px; background:var(--purple); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700; color:var(--lime); }
 .tb-logo-text { font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; letter-spacing:2px; }

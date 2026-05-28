@@ -1214,10 +1214,17 @@ window.openModal = (player, matchName) => {
   const btn=document.getElementById('m-selbtn');
   const today=new Date().toDateString();
   const alreadyPicked = userData?.lastPickDate === today;
-  if(selectedPlayer&&selectedPlayer.id===player.id){btn.textContent='✕ DESELEZIONA';btn.className='btn-sel btn-desel';}
-  else if(alreadyPicked){btn.textContent='✓ PICK FATTO OGGI';btn.className='btn-sel btn-dis';}
-  else if(selectedPlayer){btn.textContent='❌ CAMBIA PRIMA IL PICK';btn.className='btn-sel btn-dis';}
-  else{btn.textContent='✓ SELEZIONA GIOCATORE';btn.className='btn-sel';}
+  if(selectedPlayer&&selectedPlayer.id===player.id&&alreadyPicked){
+    btn.textContent='✅ PICK CONFERMATO';btn.className='btn-sel';btn.style.background='linear-gradient(135deg,#2de010,#39ff14)';btn.style.color='#080b1a';
+  } else if(selectedPlayer&&selectedPlayer.id===player.id){
+    btn.textContent='✕ DESELEZIONA';btn.className='btn-sel btn-desel';btn.style.background='';btn.style.color='';
+  } else if(alreadyPicked){
+    btn.textContent='✓ PICK FATTO OGGI';btn.className='btn-sel btn-dis';btn.style.background='';btn.style.color='';
+  } else if(selectedPlayer){
+    btn.textContent='❌ CAMBIA PRIMA IL PICK';btn.className='btn-sel btn-dis';btn.style.background='';btn.style.color='';
+  } else {
+    btn.textContent=`✓ SELEZIONA · ${PICK_LABELS[currentPickType]||'Gol'} (+${PICK_POINTS[currentPickType]||15}pts)`;btn.className='btn-sel';btn.style.background='';btn.style.color='';
+  }
   document.getElementById('playerModal').classList.add('open');
   document.body.classList.add('modal-open');
   updatePickButtons();
@@ -1233,7 +1240,16 @@ window.confirmSel = async () => {
   if(!currentPlayer||!currentUser) return;
   const today=new Date().toDateString();
   const alreadyPicked = userData?.lastPickDate === today;
-  if(selectedPlayer&&selectedPlayer.id===currentPlayer.id){
+
+  // Se il pick è già salvato oggi → non permettere deselect dal modale
+  if(alreadyPicked && selectedPlayer && selectedPlayer.id===currentPlayer.id){
+    showToast('✅ Pick già confermato per oggi!');
+    closeModal();
+    return;
+  }
+
+  // Deseleziona solo se non ancora salvato
+  if(!alreadyPicked && selectedPlayer && selectedPlayer.id===currentPlayer.id){
     selectedPlayer=null;
     const ref=doc(db,'users',currentUser.uid);
     await updateDoc(ref,{lastPickPlayer:null,lastPickDate:null});
@@ -1242,6 +1258,7 @@ window.confirmSel = async () => {
     document.getElementById('pick-done-wrap').innerHTML='';
     return;
   }
+
   if(alreadyPicked){showToast('Hai già fatto il pick di oggi!');return;}
   if(selectedPlayer){showToast('Prima deseleziona '+selectedPlayer.name);return;}
   selectedPlayer=currentPlayer;

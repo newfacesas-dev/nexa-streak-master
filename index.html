@@ -1240,34 +1240,28 @@ window.confirmSel = async () => {
   if(!currentPlayer||!currentUser) return;
   const today=new Date().toDateString();
   const alreadyPicked = userData?.lastPickDate === today;
-
-  // Se il pick è già salvato oggi → non permettere deselect dal modale
-  if(alreadyPicked && selectedPlayer && selectedPlayer.id===currentPlayer.id){
-    showToast('✅ Pick già confermato per oggi!');
-    document.getElementById('playerModal').classList.remove('open');
-    document.body.classList.remove('modal-open');
-    return;
-  }
-
-  // Deseleziona solo se non ancora salvato
-  if(!alreadyPicked && selectedPlayer && selectedPlayer.id===currentPlayer.id){
+  if(alreadyPicked){showToast('Hai già fatto il pick di oggi!');return;}
+  if(selectedPlayer&&selectedPlayer.id===currentPlayer.id){
     selectedPlayer=null;
     const ref=doc(db,'users',currentUser.uid);
     await updateDoc(ref,{lastPickPlayer:null,lastPickDate:null});
     userData.lastPickPlayer=null; userData.lastPickDate=null;
-    updateBanner();closeModal();showToast('🔄 Pick annullato');reRender();
+    updateBanner();
+    document.getElementById('playerModal').classList.remove('open');
+    document.body.classList.remove('modal-open');
+    showToast('🔄 Pick annullato');reRender();
     document.getElementById('pick-done-wrap').innerHTML='';
     return;
   }
-
-  if(alreadyPicked){showToast('Hai già fatto il pick di oggi!');return;}
   if(selectedPlayer){showToast('Prima deseleziona '+selectedPlayer.name);return;}
   selectedPlayer=currentPlayer;
   const pickData = { ...currentPlayer, pickType: currentPickType, points: PICK_POINTS[currentPickType] };
   const ref=doc(db,'users',currentUser.uid);
   await updateDoc(ref,{lastPickPlayer:pickData,lastPickDate:today});
   userData.lastPickPlayer=pickData; userData.lastPickDate=today;
-  updateBanner();closeModal();
+  updateBanner();
+  document.getElementById('playerModal').classList.remove('open');
+  document.body.classList.remove('modal-open');
   showToast(`✓ ${selectedPlayer.name} · ${PICK_LABELS[currentPickType]}! 🍀`);
   reRender();
   document.getElementById('pick-done-wrap').innerHTML=`<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${selectedPlayer.name} · ${PICK_LABELS[currentPickType]} · +${PICK_POINTS[currentPickType]} pts se indovini</div><button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button></div>`;

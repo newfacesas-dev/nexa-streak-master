@@ -458,6 +458,8 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
       <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;" id="prof-level-section">
         <div style="color:var(--muted);font-size:12px;">Caricamento livello...</div>
       </div>
+
+      <!-- STATS -->
       <div class="prof-stats">
         <div class="ps-box"><div class="ps-val" id="prof-streak" style="color:var(--gold);">🔥 0</div><div class="ps-lbl">Streak attuale</div></div>
         <div class="ps-box"><div class="ps-val" id="prof-pts" style="color:var(--purple2);">0</div><div class="ps-lbl">Punti totali</div></div>
@@ -467,17 +469,25 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
 
       <!-- SHIELD STATUS -->
       <div id="shield-status" style="margin-bottom:14px;display:none;"></div>
-      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">BADGE SBLOCCATI</div>
-      <div class="badges-grid" id="prof-badges">
-        <div class="badge-box"><div class="badge-em">🔥</div><div class="badge-lbl">Streak 10</div><div class="badge-desc">10 picks corretti</div></div>
-        <div class="badge-box"><div class="badge-em">⚡</div><div class="badge-lbl">First Win</div><div class="badge-desc">Prima vittoria</div></div>
-        <div class="badge-box"><div class="badge-em">🎯</div><div class="badge-lbl">Sniper</div><div class="badge-desc">5 attaccanti</div></div>
+
+      <!-- ULTIMO PICK -->
+      <div id="last-pick-section" style="margin-bottom:14px;display:none;">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">🎯 ULTIMO PICK</div>
+        <div id="last-pick-card" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;"></div>
       </div>
-      <button class="btn-primary" style="margin-top:12px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#080b1a;box-shadow:0 4px 20px rgba(245,166,35,0.4);" onclick="switchPage('pricing',null)">👑 DIVENTA PREMIUM</button>
 
-      <!-- NOTIFICHE -->
+      <!-- SBLOCCHI -->
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">🔓 SBLOCCHI</div>
+      <div id="unlock-section" style="margin-bottom:14px;">
+        <!-- Popolato da JS -->
+      </div>
+
+      <!-- BADGE -->
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">🏅 BADGE</div>
+      <div class="badges-grid" id="prof-badges"></div>
+
+      <button class="btn-primary" style="margin-top:14px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#080b1a;box-shadow:0 4px 20px rgba(245,166,35,0.4);" onclick="switchPage('pricing',null)">👑 DIVENTA PREMIUM</button>
       <button id="notif-btn" onclick="toggleNotifications()" style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;letter-spacing:1px;">🔕 Attiva Notifiche</button>
-
       <button class="btn-logout" onclick="logout()">⬅ ESCI</button>
     </div>
   </div>
@@ -792,6 +802,7 @@ function updateUI() {
   // pick giornaliero
   checkTodayPick();
   updatePickButtons();
+  updateProfileSections();
 
   // Shield status
   const shieldEl = document.getElementById('shield-status');
@@ -1502,6 +1513,94 @@ window.setPickType = (type, btn) => {
 function getCurrentMonth() {
   const d = new Date();
   return `${d.getFullYear()}-${d.getMonth()+1}`;
+}
+
+function updateProfileSections() {
+  if (!userData) return;
+  const level = getLevel(userData.points || 0);
+  const streak = userData.streak || 0;
+  const correct = userData.correctPicks || 0;
+  const total = userData.totalPicks || 0;
+
+  // ── ULTIMO PICK ──
+  const lastPickSec = document.getElementById('last-pick-section');
+  const lastPickCard = document.getElementById('last-pick-card');
+  if (userData.lastPickResult && lastPickSec && lastPickCard) {
+    lastPickSec.style.display = 'block';
+    const r = userData.lastPickResult;
+    const scored = r.scored;
+    lastPickCard.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:28px;">${scored ? '✅' : '❌'}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:13px;color:${scored?'var(--lime)':'var(--red)'};">${r.player||'?'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${r.pickType?window.PICK_LABELS[r.pickType]||'Gol':'Gol'} · ${scored?`+${r.points||15} punti`:'Nessun punto'}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:1px;">${r.date||''}</div>
+        </div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:20px;color:${scored?'var(--lime)':'var(--red)'};">${scored?`+${r.points||15}`:'0'}</div>
+      </div>`;
+  } else if (userData.lastPickDate === new Date().toDateString() && userData.lastPickPlayer && lastPickSec && lastPickCard) {
+    lastPickSec.style.display = 'block';
+    const p = userData.lastPickPlayer;
+    lastPickCard.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:28px;">⏳</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:13px;color:var(--gold);">${p.name||'?'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${window.PICK_LABELS[p.pickType]||'⚽ Gol'} · In attesa del risultato</div>
+        </div>
+        <div style="font-size:11px;color:var(--gold);font-weight:700;">OGGI</div>
+      </div>`;
+  }
+
+  // ── SISTEMA SBLOCCHI ──
+  const unlockSec = document.getElementById('unlock-section');
+  if (!unlockSec) return;
+
+  const unlocks = [
+    { id:'assist', icon:'🎯', name:'Assist Pick', desc:'Streak 3 consecutivi', req: streak >= 3, type:'badge', reqVal: 3, reqType:'streak' },
+    { id:'double', icon:'⚽⚽', name:'Doppietta Pick', desc:'Streak 7 consecutivi', req: streak >= 7, type:'badge', reqVal: 7, reqType:'streak' },
+    { id:'multi2', icon:'🎮', name:'2 Picks/giorno', desc:'Livello 5', req: level >= 5, type:'badge', reqVal: 5, reqType:'level' },
+    { id:'triple', icon:'⚽⚽⚽', name:'Tripletta Pick', desc:'Piano Premium', req: userData.plan === 'premium' || userData.plan === 'pro', type:'premium' },
+    { id:'multi3', icon:'🎮🎮', name:'3 Picks/giorno', desc:'Piano Premium', req: userData.plan === 'premium' || userData.plan === 'pro', type:'premium' },
+    { id:'shield', icon:'🛡️', name:'Streak Shield', desc:'Piano PRO', req: userData.plan === 'pro', type:'pro' },
+    { id:'multi4', icon:'🎮🎮🎮', name:'4 Picks/giorno', desc:'Piano PRO', req: userData.plan === 'pro', type:'pro' },
+  ];
+
+  unlockSec.innerHTML = unlocks.map(u => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:${u.req?'rgba(57,255,20,0.07)':'var(--card)'};border:1px solid ${u.req?'var(--lime)':'var(--border)'};border-radius:10px;margin-bottom:6px;">
+      <span style="font-size:22px;">${u.icon}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:${u.req?'var(--lime)':'var(--text)'};">${u.name}</div>
+        <div style="font-size:11px;color:var(--muted);">${u.desc}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:${u.req?'rgba(57,255,20,0.2)':u.type==='badge'?'rgba(108,61,232,0.2)':'rgba(245,166,35,0.2)'};color:${u.req?'var(--lime)':u.type==='badge'?'var(--purple2)':'var(--gold)'};">
+        ${u.req ? '✓ SBLOCCATO' : u.type==='badge' ? '🔒 BADGE' : u.type==='premium' ? '👑 PREMIUM' : '👑 PRO'}
+      </div>
+    </div>`).join('');
+
+  // ── BADGE ──
+  const allBadges = [
+    { em:'⚡', lbl:'First Win', desc:'Prima vittoria', req: correct >= 1 },
+    { em:'🔥', lbl:'Streak 3', desc:'3 picks consecutivi', req: streak >= 3 },
+    { em:'🎯', lbl:'Sniper', desc:'5 picks corretti', req: correct >= 5 },
+    { em:'🔥', lbl:'Streak 7', desc:'7 picks consecutivi', req: streak >= 7 },
+    { em:'⭐', lbl:'LVL 5', desc:'Livello 5', req: level >= 5 },
+    { em:'💎', lbl:'Streak 10', desc:'10 picks consecutivi', req: streak >= 10 },
+    { em:'🏆', lbl:'Pro Player', desc:'50 picks corretti', req: correct >= 50 },
+    { em:'👑', lbl:'Leggenda', desc:'Streak 30', req: streak >= 30 },
+    { em:'🌍', lbl:'Globetrotter', desc:'5 leghe diverse', req: false },
+  ];
+
+  const badgesEl = document.getElementById('prof-badges');
+  if (badgesEl) {
+    badgesEl.innerHTML = allBadges.map(b => `
+      <div class="badge-box" style="${!b.req?'opacity:0.3;filter:grayscale(1);':''}">
+        <div class="badge-em">${b.em}</div>
+        <div class="badge-lbl">${b.lbl}</div>
+        <div class="badge-desc">${b.desc}</div>
+      </div>`).join('');
+  }
 }
 
 let pricingAnnual = false;

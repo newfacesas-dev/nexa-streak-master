@@ -432,7 +432,74 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
         <div class="badge-box"><div class="badge-em">⚡</div><div class="badge-lbl">First Win</div><div class="badge-desc">Prima vittoria</div></div>
         <div class="badge-box"><div class="badge-em">🎯</div><div class="badge-lbl">Sniper</div><div class="badge-desc">5 attaccanti</div></div>
       </div>
+      <button class="btn-primary" style="margin-top:12px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#080b1a;box-shadow:0 4px 20px rgba(245,166,35,0.4);" onclick="switchPage('pricing',null)">👑 DIVENTA PREMIUM</button>
       <button class="btn-logout" onclick="logout()">⬅ ESCI</button>
+    </div>
+  </div>
+
+  <!-- PRICING PAGE -->
+  <div id="pricing" class="page">
+    <div class="topbar">
+      <button onclick="switchPage('profilo',null)" style="background:none;border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">← TORNA</button>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;">NEXA <span style="color:var(--lime);">PREMIUM</span></div>
+      <div style="width:80px;"></div>
+    </div>
+    <div style="padding:30px 16px 20px;max-width:480px;margin:0 auto;text-align:center;">
+      <div style="font-size:48px;margin-bottom:12px;">👑</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-bottom:8px;">SCEGLI IL TUO PIANO</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">Sblocca statistiche avanzate, picks illimitati e sfide esclusive.</div>
+
+      <!-- TOGGLE -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px;">
+        <span id="p-mlbl" style="font-size:13px;font-weight:700;color:var(--text);">MENSILE</span>
+        <div id="p-toggle" onclick="togglePricing()" style="width:48px;height:26px;background:var(--purple);border-radius:13px;cursor:pointer;position:relative;transition:all 0.2s;">
+          <div id="p-tball" style="width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:3px;left:3px;transition:all 0.2s;"></div>
+        </div>
+        <span id="p-albl" style="font-size:13px;font-weight:700;color:var(--muted);">ANNUALE</span>
+        <span style="background:var(--lime-dim);border:1px solid rgba(57,255,20,0.3);color:var(--lime);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">-40%</span>
+      </div>
+
+      <!-- FREE -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;text-align:left;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div><div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;">🎮 FREE</div><div style="font-size:12px;color:var(--muted);">Per sempre gratis</div></div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:var(--muted);">€0</div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:2;">✓ 1 pick al giorno &nbsp; ✓ Partite LIVE &nbsp; ✓ Classifica &nbsp; ✓ 3 sfide/mese<br>✗ Statistiche avanzate &nbsp; ✗ Notifiche gol &nbsp; ✗ Streak Shield</div>
+        <button style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:12px;">PIANO ATTUALE</button>
+      </div>
+
+      <!-- PREMIUM -->
+      <div style="background:linear-gradient(135deg,rgba(57,255,20,0.08),var(--card));border:2px solid var(--lime);border-radius:16px;padding:20px;margin-bottom:12px;text-align:left;position:relative;">
+        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--lime);color:var(--bg);padding:4px 16px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:2px;white-space:nowrap;">⚡ PIÙ POPOLARE</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div><div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--lime);">🔥 PREMIUM</div><div style="font-size:12px;color:var(--muted);" id="p-prem-period">al mese</div></div>
+          <div><span style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:var(--lime);" id="p-prem-price">€4.99</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--text);line-height:2;">✓ Picks illimitati &nbsp; ✓ Statistiche avanzate &nbsp; ✓ Sfide illimitate<br>✓ Storico 20 partite &nbsp; ✓ Notifiche gol push &nbsp; ✗ Streak Shield</div>
+        <button onclick="showToast('Coming soon! 🚀')" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:12px;box-shadow:0 4px 15px rgba(108,61,232,0.4);">INIZIA ORA</button>
+      </div>
+
+      <!-- PRO -->
+      <div style="background:linear-gradient(135deg,rgba(245,166,35,0.08),var(--card));border:1px solid rgba(245,166,35,0.4);border-radius:16px;padding:20px;margin-bottom:20px;text-align:left;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div><div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--gold);">👑 PRO</div><div style="font-size:12px;color:var(--muted);" id="p-pro-period">al mese</div></div>
+          <div><span style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:var(--gold);" id="p-pro-price">€9.99</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--text);line-height:2;">✓ Tutto di Premium &nbsp; ✓ Streak Shield 1/mese<br>✓ Analisi AI giocatori &nbsp; ✓ Torneo mensile esclusivo &nbsp; ✓ Badge PRO</div>
+        <button onclick="showToast('Coming soon! 👑')" style="width:100%;padding:13px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#080b1a;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:12px;box-shadow:0 4px 15px rgba(245,166,35,0.4);">DIVENTA PRO</button>
+      </div>
+
+      <!-- NOTE -->
+      <div style="background:var(--card);border:1px solid rgba(245,166,35,0.2);border-radius:12px;padding:16px;margin-bottom:16px;text-align:left;">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--gold);margin-bottom:8px;">💰 COME FUNZIONA NEXA</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7;">✓ App gratuita · ✓ Solo punti virtuali · ✓ No gioco d'azzardo<br>✓ Rewarded ads opzionali · ✓ Quote solo indicative<br>✓ Compliance 100% · ✓ Cancella quando vuoi</div>
+      </div>
+
+      <div style="font-size:10px;color:rgba(255,255,255,0.2);text-align:center;line-height:1.7;">
+        18+ · Quote indicative · Non sono offerte di scommessa · Gioca responsabilmente<br>
+        <span style="text-decoration:underline;cursor:pointer;">Privacy Policy</span> · <span style="text-decoration:underline;cursor:pointer;">Termini di Servizio</span>
+      </div>
     </div>
   </div>
 
@@ -1126,6 +1193,22 @@ window.switchPage = (id, btn) => {
 window.showToast = (msg) => {
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2500);
+};
+
+// PRICING TOGGLE
+let pricingAnnual = false;
+window.togglePricing = () => {
+  pricingAnnual = !pricingAnnual;
+  const ball = document.getElementById('p-tball');
+  const mlbl = document.getElementById('p-mlbl');
+  const albl = document.getElementById('p-albl');
+  ball.style.left = pricingAnnual ? '25px' : '3px';
+  mlbl.style.color = pricingAnnual ? 'var(--muted)' : 'var(--text)';
+  albl.style.color = pricingAnnual ? 'var(--text)' : 'var(--muted)';
+  document.getElementById('p-prem-price').textContent = pricingAnnual ? '€2.99' : '€4.99';
+  document.getElementById('p-prem-period').textContent = pricingAnnual ? 'al mese · €35.88/anno' : 'al mese';
+  document.getElementById('p-pro-price').textContent = pricingAnnual ? '€5.99' : '€9.99';
+  document.getElementById('p-pro-period').textContent = pricingAnnual ? 'al mese · €71.88/anno' : 'al mese';
 };
 
 // Close modals on backdrop

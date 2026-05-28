@@ -10,9 +10,14 @@ const API_KEY = 'aaffc4c43b7d54b8d16ca3a956543380';
 const BASE = 'https://v3.football.api-sports.io';
 const H = { 'x-apisports-key': API_KEY };
 
+// TOP LEGHE ONLY
+const TOP_LEAGUES = [1, 2, 3, 4, 39, 61, 78, 135, 140, 143, 253, 307, 549];
+// 1=Mondiali, 2=Champions, 3=Europa, 4=Europei, 39=Premier, 61=Ligue1
+// 78=Bundesliga, 135=SerieA, 140=LaLiga, 143=Copa del Rey, 253=MLS, 307=Saudi, 549=Damallsvenskan
+
 const cache = {};
-function gc(k) { if (cache[k] && Date.now()-cache[k].t < 300000) return cache[k].d; return null; }
-function sc(k,d) { cache[k] = {d, t: Date.now()}; }
+function gc(k) { if (cache[k] && Date.now()-cache[k].t < 60000) return cache[k].d; return null; }
+function sc(k,d,ttl=60000) { cache[k] = {d, t: Date.now(), ttl}; }
 function formatDate(d) { return d.toISOString().split('T')[0]; }
 
 function mapFixture(m) {
@@ -25,100 +30,37 @@ function mapFixture(m) {
     home: { id: m.teams.home.id, name: m.teams.home.name, logo: m.teams.home.logo, goals: m.goals.home },
     away: { id: m.teams.away.id, name: m.teams.away.name, logo: m.teams.away.logo, goals: m.goals.away },
     league: { id: m.league.id, name: m.league.name, country: m.league.country, logo: m.league.logo, season: m.league.season },
-    events: (m.events||[]).filter(e => e.type === 'Goal')
+    events: (m.events||[]).filter(e => e.type === 'Goal' || e.type === 'subst')
   };
 }
 
-// ═══ LIVE ═══
+function filterTopLeagues(matches) {
+  return matches.filter(m => TOP_LEAGUES.includes(m.league.id));
+}
+
+// ═══ LIVE (solo top leghe) ═══
 app.get('/api/matches/live', async (req, res) => {
   try {
     const c = gc('live'); if (c) return res.json(c);
     const r = await axios.get(`${BASE}/fixtures`, { params: { live: 'all' }, headers: H });
-    const data = (r.data.response||[]).map(mapFixture);
+    const all = (r.data.response||[]).map(mapFixture);
+    const data = filterTopLeagues(all);
     sc('live', data);
-    console.log('✅ Live:', data.length);
+    console.log(`✅ Live: ${all.length} totali, ${data.length} top leghe`);
     res.json(data);
-  } catch(e) { res.json([]); }
-});
-
-// ═══ MONDIALI 2026 (League ID: 1) =====
-app.get('/api/matches/worldcup', async (req, res) => {
-  try {
-    const c = gc('worldcup'); if (c) return res.json(c);
-    // Partite live Mondiali
-    const liveRes = await axios.get(`${BASE}/fixtures`, {
-      params: { live: 'all', league: 1, season: 2026 },
-      headers: H
-    });
-    // Partite di oggi Mondiali
-    const todayRes = await axios.get(`${BASE}/fixtures`, {
-      params: { league: 1, season: 2026, date: formatDate(new Date()) },
-      headers: H
-    });
-    const allMatches = [
-      ...(liveRes.data.response||[]),
-      ...(todayRes.data.response||[])
-    ];
-    // Rimuovi duplicati per ID
-    const unique = allMatches.filter((m, i, arr) =>
-      arr.findIndex(x => x.fixture.id === m.fixture.id) === i
-    );
-    const data = unique.map(mapFixture);
-    sc('worldcup', data);
-    console.log('✅ World Cup matches:', data.length);
-    res.json(data);
-  } catch(e) {
-    console.error('❌ worldcup:', e.message);
-    res.json([]);
-  }
-});
-
-// ═══ GRUPPI MONDIALI =====
-app.get('/api/worldcup/groups', async (req, res) => {
-  try {
-    const c = gc('wc_groups'); if (c) return res.json(c);
-    const r = await axios.get(`${BASE}/standings`, {
-      params: { league: 1, season: 2026 },
-      headers: H
-    });
-    const data = r.data.response || [];
-    sc('wc_groups', data);
-    res.json(data);
-  } catch(e) { res.json([]); }
-});
-
-// ═══ TOP SCORER MONDIALI =====
-app.get('/api/worldcup/topscorers', async (req, res) => {
-  try {
-    const c = gc('wc_top'); if (c) return res.json(c);
-    const r = await axios.get(`${BASE}/players/topscorers`, {
-      params: { league: 1, season: 2026 },
-      headers: H
-    });
-    const data = (r.data.response||[]).slice(0, 20).map(p => ({
-      id: p.player.id,
-      name: p.player.name,
-      photo: p.player.photo,
-      nationality: p.player.nationality,
-      goals: p.statistics[0]?.goals?.total || 0,
-      assists: p.statistics[0]?.goals?.assists || 0,
-      rating: p.statistics[0]?.games?.rating || null,
-      team: p.statistics[0]?.team?.name || '?',
-      teamLogo: p.statistics[0]?.team?.logo || ''
-    }));
-    sc('wc_top', data);
-    console.log('✅ WC top scorers:', data.length);
-    res.json(data);
-  } catch(e) { res.json([]); }
+  } catch(e) { console.error('❌',e.message); res.json([]); }
 });
 
 // ═══ OGGI ═══
 app.get('/api/matches/today', async (req, res) => {
   try {
     const c = gc('today'); if (c) return res.json(c);
-    const r = await axios.get(`${BASE}/fixtures`, { params: { date: formatDate(new Date()), status: 'NS' }, headers: H });
-    const data = (r.data.response||[]).map(mapFixture);
+    const today = formatDate(new Date());
+    const r = await axios.get(`${BASE}/fixtures`, { params: { date: today }, headers: H });
+    const all = (r.data.response||[]).map(mapFixture);
+    const data = filterTopLeagues(all);
     sc('today', data);
+    console.log(`✅ Today: ${data.length} top leghe`);
     res.json(data);
   } catch(e) { res.json([]); }
 });
@@ -128,9 +70,11 @@ app.get('/api/matches/tomorrow', async (req, res) => {
   try {
     const c = gc('tomorrow'); if (c) return res.json(c);
     const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-    const r = await axios.get(`${BASE}/fixtures`, { params: { date: formatDate(tomorrow), status: 'NS' }, headers: H });
-    const data = (r.data.response||[]).map(mapFixture);
+    const r = await axios.get(`${BASE}/fixtures`, { params: { date: formatDate(tomorrow) }, headers: H });
+    const all = (r.data.response||[]).map(mapFixture);
+    const data = filterTopLeagues(all);
     sc('tomorrow', data);
+    console.log(`✅ Tomorrow: ${data.length} top leghe`);
     res.json(data);
   } catch(e) { res.json([]); }
 });
@@ -166,13 +110,13 @@ app.get('/api/team/:id/players', async (req, res) => {
       };
     }).filter(p => p.minutes > 0 || p.goals > 0)
       .sort((a,b) => (parseFloat(b.rating)||0) - (parseFloat(a.rating)||0))
-      .slice(0, 8);
-    sc(key, data);
+      .slice(0, 10);
+    sc(key, data, 300000);
     res.json(data);
   } catch(e) { res.json([]); }
 });
 
-// ═══ STORICO GOL GIOCATORE ═══
+// ═══ STORICO GOL + ASSIST GIOCATORE ═══
 app.get('/api/player/:id/history', async (req, res) => {
   const { id } = req.params;
   const season = req.query.season || '2025';
@@ -185,7 +129,8 @@ app.get('/api/player/:id/history', async (req, res) => {
     });
     const history = (r.data.response||[]).map(m => {
       const playerGoals = (m.events||[]).filter(e => e.type==='Goal' && e.player?.id==id).length;
-      const isHome = m.teams.home.id == id;
+      const playerAssists = (m.events||[]).filter(e => e.type==='Goal' && e.assist?.id==id).length;
+      const isHome = m.teams.home.players?.some(p => p.player.id==id);
       const myGoals = isHome ? m.goals.home : m.goals.away;
       const oppGoals = isHome ? m.goals.away : m.goals.home;
       return {
@@ -194,111 +139,211 @@ app.get('/api/player/:id/history', async (req, res) => {
         away: m.teams.away.name,
         score: `${m.goals.home}-${m.goals.away}`,
         goals: playerGoals,
+        assists: playerAssists,
         result: myGoals > oppGoals ? 'W' : myGoals < oppGoals ? 'L' : 'D'
       };
     });
-    sc(key, history);
+    sc(key, history, 300000);
     res.json(history);
   } catch(e) { res.json([]); }
 });
 
-// ═══ VERIFICA PICK (chiave per il gioco!) ═══
+// ═══ VERIFICA PICK (gol + assist + doppietta) ═══
 app.get('/api/verify-pick/:playerId', async (req, res) => {
   const { playerId } = req.params;
-  const { fixtureId } = req.query;
-  
+  const { fixtureId, pickType } = req.query;
+  // pickType: 'goal' | 'assist' | 'double' | 'triple'
+
   try {
-    console.log(`🔍 Verifica pick: player ${playerId}, fixture ${fixtureId}`);
-    
-    // Se abbiamo fixture ID specifico
+    console.log(`🔍 Verifica: player ${playerId}, type: ${pickType||'goal'}`);
+
+    let fixtures = [];
+
     if (fixtureId) {
-      const r = await axios.get(`${BASE}/fixtures`, {
-        params: { id: fixtureId },
-        headers: H
-      });
-      const fixture = r.data.response?.[0];
-      if (!fixture) return res.json({ status: 'not_found' });
-      
-      const fixtureStatus = fixture.fixture.status.short;
-      const isFinished = ['FT','AET','PEN'].includes(fixtureStatus);
-      const isLive = ['1H','2H','HT','ET'].includes(fixtureStatus);
-      
-      const playerGoals = (fixture.events||[]).filter(e => 
-        e.type === 'Goal' && e.player?.id == playerId
+      const r = await axios.get(`${BASE}/fixtures`, { params: { id: fixtureId }, headers: H });
+      fixtures = r.data.response || [];
+    } else {
+      const today = formatDate(new Date());
+      const r = await axios.get(`${BASE}/fixtures`, { params: { date: today }, headers: H });
+      fixtures = r.data.response || [];
+    }
+
+    for (const match of fixtures) {
+      const status = match.fixture.status.short;
+      const isFinished = ['FT','AET','PEN'].includes(status);
+      const isLive = ['1H','2H','HT','ET'].includes(status);
+
+      const playerGoals = (match.events||[]).filter(e =>
+        e.type === 'Goal' && e.player?.id == playerId &&
+        e.detail !== 'Missed Penalty' && e.detail !== 'Own Goal'
       ).length;
-      
+
+      const playerAssists = (match.events||[]).filter(e =>
+        e.type === 'Goal' && e.assist?.id == playerId
+      ).length;
+
+      // Controlla se il giocatore ha partecipato
+      const involved = playerGoals > 0 || playerAssists > 0;
+      if (!involved && !isFinished && !isLive) continue;
+
+      let scored = false;
+      let resultMsg = '';
+
+      switch(pickType) {
+        case 'assist':
+          scored = playerAssists >= 1;
+          resultMsg = scored ? `🎯 ${playerAssists} assist` : 'Nessun assist';
+          break;
+        case 'double':
+          scored = playerGoals >= 2;
+          resultMsg = scored ? `⚽⚽ DOPPIETTA! ${playerGoals} gol` : `Solo ${playerGoals} gol`;
+          break;
+        case 'triple':
+          scored = playerGoals >= 3;
+          resultMsg = scored ? `⚽⚽⚽ TRIPLETTA! ${playerGoals} gol` : `Solo ${playerGoals} gol`;
+          break;
+        case 'goal_assist':
+          scored = playerGoals >= 1 && playerAssists >= 1;
+          resultMsg = scored ? `⚽🎯 Gol+Assist!` : `${playerGoals} gol, ${playerAssists} assist`;
+          break;
+        default: // 'goal'
+          scored = playerGoals >= 1;
+          resultMsg = scored ? `⚽ ${playerGoals} gol` : 'Nessun gol';
+      }
+
       return res.json({
         status: isFinished ? 'finished' : isLive ? 'live' : 'pending',
-        fixtureStatus,
+        fixtureStatus: status,
         playerGoals,
-        scored: playerGoals > 0,
-        home: fixture.teams.home.name,
-        away: fixture.teams.away.name,
-        score: `${fixture.goals.home}-${fixture.goals.away}`,
-        minute: fixture.fixture.status.elapsed
+        playerAssists,
+        scored,
+        resultMsg,
+        pickType: pickType || 'goal',
+        home: match.teams.home.name,
+        away: match.teams.away.name,
+        score: `${match.goals.home}-${match.goals.away}`,
+        minute: match.fixture.status.elapsed,
+        fixtureId: match.fixture.id
       });
     }
-    
-    // Cerca nelle partite di oggi finite
-    const today = formatDate(new Date());
-    const r = await axios.get(`${BASE}/fixtures`, {
-      params: { date: today, status: 'FT' },
-      headers: H
-    });
-    
-    let result = { status: 'not_played', playerGoals: 0, scored: false };
-    
-    for (const match of r.data.response||[]) {
-      const goals = (match.events||[]).filter(e => 
-        e.type === 'Goal' && e.player?.id == playerId
-      );
-      if (goals.length > 0) {
-        result = {
-          status: 'finished',
-          playerGoals: goals.length,
-          scored: true,
-          home: match.teams.home.name,
-          away: match.teams.away.name,
-          score: `${match.goals.home}-${match.goals.away}`,
-          fixtureId: match.fixture.id
-        };
-        break;
-      }
-    }
-    
-    console.log(`✅ Verifica result:`, result);
-    res.json(result);
+
+    res.json({ status: 'not_found', scored: false, playerGoals: 0, playerAssists: 0 });
   } catch(e) {
-    console.error('❌ verify-pick:', e.message);
+    console.error('❌ verify:', e.message);
     res.json({ status: 'error', error: e.message });
   }
 });
 
-// ═══ PARTITE FINITE OGGI ═══
-app.get('/api/matches/finished', async (req, res) => {
+// ═══ GIOCATORE DEL GIORNO ═══
+app.get('/api/player-of-day', async (req, res) => {
   try {
+    const c = gc('pod'); if (c) return res.json(c);
     const today = formatDate(new Date());
+
+    // Prendi partite finite oggi nelle top leghe
     const r = await axios.get(`${BASE}/fixtures`, {
       params: { date: today, status: 'FT' },
       headers: H
     });
-    const data = (r.data.response||[]).map(mapFixture);
+
+    const topMatches = filterTopLeagues((r.data.response||[]).map(m => m));
+    
+    let bestPlayer = null;
+    let bestScore = 0;
+
+    for (const match of topMatches) {
+      const events = match.events || [];
+      const scorers = {};
+      const assisters = {};
+
+      events.forEach(e => {
+        if (e.type === 'Goal' && e.detail !== 'Own Goal' && e.detail !== 'Missed Penalty') {
+          const pid = e.player?.id;
+          if (pid) scorers[pid] = (scorers[pid] || 0) + 1;
+        }
+        if (e.type === 'Goal' && e.assist?.id) {
+          const pid = e.assist.id;
+          assisters[pid] = (assisters[pid] || 0) + 1;
+        }
+      });
+
+      // Calcola score per ogni giocatore
+      Object.entries(scorers).forEach(([pid, goals]) => {
+        const assists = assisters[pid] || 0;
+        const score = goals * 3 + assists; // gol vale 3, assist 1
+        if (score > bestScore) {
+          bestScore = score;
+          const event = events.find(e => e.player?.id == pid);
+          bestPlayer = {
+            id: pid,
+            name: event?.player?.name || 'Unknown',
+            goals,
+            assists,
+            score,
+            match: `${match.teams.home.name} vs ${match.teams.away.name}`,
+            matchScore: `${match.goals.home}-${match.goals.away}`,
+            league: match.league.name
+          };
+        }
+      });
+    }
+
+    const result = bestPlayer || null;
+    sc('pod', result, 300000);
+    res.json(result);
+  } catch(e) {
+    console.error('❌ pod:', e.message);
+    res.json(null);
+  }
+});
+
+// ═══ MONDIALI ═══
+app.get('/api/matches/worldcup', async (req, res) => {
+  try {
+    const c = gc('worldcup'); if (c) return res.json(c);
+    const liveRes = await axios.get(`${BASE}/fixtures`, {
+      params: { live: 'all', league: 1, season: 2026 }, headers: H
+    });
+    const todayRes = await axios.get(`${BASE}/fixtures`, {
+      params: { league: 1, season: 2026, date: formatDate(new Date()) }, headers: H
+    });
+    const all = [...(liveRes.data.response||[]), ...(todayRes.data.response||[])];
+    const unique = all.filter((m,i,arr) => arr.findIndex(x=>x.fixture.id===m.fixture.id)===i);
+    const data = unique.map(mapFixture);
+    sc('worldcup', data);
+    res.json(data);
+  } catch(e) { res.json([]); }
+});
+
+// ═══ TOP SCORER MONDIALI ═══
+app.get('/api/worldcup/topscorers', async (req, res) => {
+  try {
+    const c = gc('wc_top'); if (c) return res.json(c);
+    const r = await axios.get(`${BASE}/players/topscorers`, {
+      params: { league: 1, season: 2026 }, headers: H
+    });
+    const data = (r.data.response||[]).slice(0,20).map(p => ({
+      id: p.player.id, name: p.player.name, photo: p.player.photo,
+      nationality: p.player.nationality,
+      goals: p.statistics[0]?.goals?.total || 0,
+      assists: p.statistics[0]?.goals?.assists || 0,
+      rating: p.statistics[0]?.games?.rating || null,
+      team: p.statistics[0]?.team?.name || '?',
+      teamLogo: p.statistics[0]?.team?.logo || ''
+    }));
+    sc('wc_top', data, 300000);
     res.json(data);
   } catch(e) { res.json([]); }
 });
 
 app.listen(3000, () => {
   console.log(`
-╔════════════════════════════════════════╗
-║   NEXA STREAK MASTER — BACKEND v4     ║
-║   Port 3000                            ║
-║   ✅ /api/matches/live                ║
-║   ✅ /api/matches/today               ║
-║   ✅ /api/matches/tomorrow            ║
-║   ✅ /api/matches/finished            ║
-║   ✅ /api/team/:id/players            ║
-║   ✅ /api/player/:id/history          ║
-║   ✅ /api/verify-pick/:playerId NEW!  ║
-╚════════════════════════════════════════╝
+╔══════════════════════════════════════════╗
+║   NEXA STREAK MASTER — BACKEND v5        ║
+║   ✅ Solo TOP leghe (Serie A, PL, ecc)   ║
+║   ✅ Verifica: gol/assist/doppietta      ║
+║   ✅ Giocatore del giorno                ║
+║   ✅ Mondiali 2026 ready                 ║
+╚══════════════════════════════════════════╝
   `);
 });

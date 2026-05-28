@@ -254,6 +254,9 @@ body.modal-open { overflow:hidden; }
 .m-disc { font-size:9px;color:rgba(255,255,255,0.2);text-align:center;margin-bottom:12px; }
 .btn-sel { width:100%;padding:14px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:var(--text);border:none;font-family:'Rajdhani',sans-serif;font-size:17px;letter-spacing:2px;border-radius:10px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 15px rgba(108,61,232,0.4);font-weight:700; }
 .btn-sel:hover { transform:translateY(-1px); }
+.pick-type-btn { padding:10px 8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;text-align:center;transition:all 0.2s;line-height:1.4; }
+.pick-type-btn.active { background:var(--purple-dim);border-color:var(--purple);color:var(--lime); }
+.pick-type-btn:hover { border-color:var(--purple); }
 .btn-desel { background:rgba(255,77,77,0.15)!important;color:var(--red)!important;border:1px solid rgba(255,77,77,0.3)!important;box-shadow:none!important; }
 .btn-dis { background:rgba(255,255,255,0.05)!important;color:var(--muted)!important;border:1px solid var(--border)!important;cursor:not-allowed!important;box-shadow:none!important;transform:none!important; }
 
@@ -541,6 +544,18 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
       <div class="m-odd"><div class="m-ov" id="m-q3">—</div><div class="m-ol">2+ gol</div></div>
     </div>
     <div class="m-disc">18+ · Quote indicative · Non sono offerte di scommessa · Gioca responsabilmente</div>
+
+    <!-- TIPO PICK -->
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">🎯 TIPO DI PICK</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;" id="pick-type-grid">
+        <button class="pick-type-btn active" data-type="goal" onclick="setPickType('goal',this)">⚽ GOL<br><span style="font-size:9px;color:var(--muted);">+15 punti</span></button>
+        <button class="pick-type-btn" data-type="assist" onclick="setPickType('assist',this)">🎯 ASSIST<br><span style="font-size:9px;color:var(--muted);">+12 punti</span></button>
+        <button class="pick-type-btn" data-type="double" onclick="setPickType('double',this)">⚽⚽ DOPPIETTA<br><span style="font-size:9px;color:var(--muted);">+35 punti</span></button>
+        <button class="pick-type-btn" data-type="triple" onclick="setPickType('triple',this)">⚽⚽⚽ TRIPLETTA<br><span style="font-size:9px;color:var(--muted);">+75 punti</span></button>
+      </div>
+    </div>
+
     <button class="btn-sel" id="m-selbtn" onclick="confirmSel()">✓ SELEZIONA GIOCATORE</button>
   </div>
 </div>
@@ -696,24 +711,26 @@ window.verifyPick = async () => {
   if (userData.lastPickDate !== today) return;
   
   const player = userData.lastPickPlayer;
+  const pickType = player.pickType || 'goal';
+  const basePts = player.points || PICK_POINTS[pickType] || 15;
   const wrap = document.getElementById('pick-done-wrap');
   
   try {
     wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
       <div class="pick-done-title">⏳ VERIFICA IN CORSO...</div>
-      <div class="pick-done-sub">${player.name}</div>
+      <div class="pick-done-sub">${player.name} · ${PICK_LABELS[pickType]||'Gol'}</div>
     </div>`;
     
-    const r = await fetch(`${BACKEND}/api/verify-pick/${player.id}`);
+    const r = await fetch(`${BACKEND}/api/verify-pick/${player.id}?pickType=${pickType}`);
     const result = await r.json();
     
     console.log('🔍 Verifica result:', result);
     
     if (result.status === 'finished') {
       if (result.scored) {
-        // GOL! Aggiorna streak e punti
         const newStreak = (userData.streak || 0) + 1;
-        const pointsEarned = 15 + (newStreak * 2); // bonus per streak lunga
+        const streakBonus = newStreak * 2;
+        const pointsEarned = basePts + streakBonus;
         const newPoints = (userData.points || 0) + pointsEarned;
         const newCorrect = (userData.correctPicks || 0) + 1;
         const newTotal = (userData.totalPicks || 0) + 1;
@@ -721,14 +738,10 @@ window.verifyPick = async () => {
         
         const ref = doc(db, 'users', currentUser.uid);
         await updateDoc(ref, {
-          streak: newStreak,
-          maxStreak: newMax,
-          points: newPoints,
-          correctPicks: newCorrect,
-          totalPicks: newTotal,
-          lastPickDate: null,
-          lastPickPlayer: null,
-          lastPickResult: { scored: true, player: player.name, points: pointsEarned, date: today }
+          streak: newStreak, maxStreak: newMax, points: newPoints,
+          correctPicks: newCorrect, totalPicks: newTotal,
+          lastPickDate: null, lastPickPlayer: null,
+          lastPickResult: { scored: true, player: player.name, pickType, points: pointsEarned, date: today }
         });
         userData.streak = newStreak; userData.points = newPoints;
         userData.correctPicks = newCorrect; userData.totalPicks = newTotal;
@@ -736,11 +749,12 @@ window.verifyPick = async () => {
         selectedPlayer = null;
         updateUI(); updateBanner();
         
+        const emoji = pickType==='triple'?'🎉🎉🎉':pickType==='double'?'🎉🎉':'🎉';
         wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;background:linear-gradient(135deg,rgba(57,255,20,0.25),rgba(57,255,20,0.1));">
-          <div class="pick-done-title">🎉 ${player.name} HA SEGNATO!</div>
+          <div class="pick-done-title">${emoji} ${player.name} · ${result.resultMsg||'INDOVINATO'}!</div>
           <div class="pick-done-sub">+${pointsEarned} punti · Streak ${newStreak}🔥 · ${result.score}</div>
         </div>`;
-        showToast(`🎉 ${player.name} GOL! +${pointsEarned} punti!`);
+        showToast(`${emoji} ${player.name} · ${result.resultMsg}! +${pointsEarned} punti!`);
         if (window.verifyInterval) { clearInterval(window.verifyInterval); window.verifyInterval = null; }
         setTimeout(() => { wrap.innerHTML = ''; }, 10000);
         
@@ -1063,13 +1077,14 @@ window.confirmSel = async () => {
   if(alreadyPicked){showToast('Hai già fatto il pick di oggi!');return;}
   if(selectedPlayer){showToast('Prima deseleziona '+selectedPlayer.name);return;}
   selectedPlayer=currentPlayer;
+  const pickData = { ...currentPlayer, pickType: currentPickType, points: PICK_POINTS[currentPickType] };
   const ref=doc(db,'users',currentUser.uid);
-  await updateDoc(ref,{lastPickPlayer:currentPlayer,lastPickDate:today});
-  userData.lastPickPlayer=currentPlayer; userData.lastPickDate=today;
+  await updateDoc(ref,{lastPickPlayer:pickData,lastPickDate:today});
+  userData.lastPickPlayer=pickData; userData.lastPickDate=today;
   updateBanner();closeModal();
-  showToast('✓ '+selectedPlayer.name+' selezionato! 🍀');
+  showToast(`✓ ${selectedPlayer.name} · ${PICK_LABELS[currentPickType]}! 🍀`);
   reRender();
-  document.getElementById('pick-done-wrap').innerHTML=`<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${selectedPlayer.name} · In attesa del risultato</div><button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button></div>`;
+  document.getElementById('pick-done-wrap').innerHTML=`<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${selectedPlayer.name} · ${PICK_LABELS[currentPickType]} · +${PICK_POINTS[currentPickType]} pts se indovini</div><button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button></div>`;
   if (!window.verifyInterval) { window.verifyInterval = setInterval(verifyPick, 180000); }
 };
 
@@ -1195,7 +1210,21 @@ window.showToast = (msg) => {
   setTimeout(()=>t.classList.remove('show'),2500);
 };
 
-// PRICING TOGGLE
+// PICK TYPE
+let currentPickType = 'goal';
+const PICK_POINTS = { goal: 15, assist: 12, double: 35, triple: 75, goal_assist: 25 };
+const PICK_LABELS = { goal: '⚽ Gol', assist: '🎯 Assist', double: '⚽⚽ Doppietta', triple: '⚽⚽⚽ Tripletta' };
+
+window.setPickType = (type, btn) => {
+  currentPickType = type;
+  document.querySelectorAll('.pick-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const pts = PICK_POINTS[type];
+  const btn2 = document.getElementById('m-selbtn');
+  if (btn2 && !btn2.classList.contains('btn-dis') && !btn2.classList.contains('btn-desel')) {
+    btn2.textContent = `✓ SELEZIONA · ${PICK_LABELS[type]} (+${pts}pts)`;
+  }
+};
 let pricingAnnual = false;
 window.togglePricing = () => {
   pricingAnnual = !pricingAnnual;

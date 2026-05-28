@@ -1244,7 +1244,8 @@ window.confirmSel = async () => {
   // Se il pick è già salvato oggi → non permettere deselect dal modale
   if(alreadyPicked && selectedPlayer && selectedPlayer.id===currentPlayer.id){
     showToast('✅ Pick già confermato per oggi!');
-    closeModal();
+    document.getElementById('playerModal').classList.remove('open');
+    document.body.classList.remove('modal-open');
     return;
   }
 

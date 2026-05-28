@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NEXA Streak Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a0e27;
+  --navy2: #0d1138;
+  --navy3: #131940;
+  --lime: #39ff14;
+  --lime2: #2de010;
+  --lime-dim: rgba(57,255,20,0.12);
+  --lime-glow: 0 0 20px rgba(57,255,20,0.3);
+  --red: #ff4444;
+  --orange: #ffa500;
+  --gold: #ffd700;
+  --text: #ffffff;
+  --muted: #8892b0;
+  --border: rgba(57,255,20,0.2);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--navy);
+  background-image: radial-gradient(ellipse at 20% 20%, rgba(57,255,20,0.04) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 80%, rgba(57,255,20,0.03) 0%, transparent 60%);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  padding-bottom: 90px;
+  overflow-x: hidden;
+}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--lime-dim); border-radius:2px; }
+
+/* ═══ LAYOUT ═══ */
+.container { max-width: 480px; margin: 0 auto; padding: 0 16px; }
+
+/* ═══ PAGES ═══ */
+.page { display:none; animation: fadeIn 0.3s ease; }
+.page.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══ HOME ═══ */
+.home-hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px 100px;
+  position: relative;
+}
+.home-hero::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(57,255,20,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.logo-wrap { margin-bottom: 32px; }
+.logo-x {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 64px;
+  color: var(--lime);
+  line-height: 1;
+  filter: drop-shadow(var(--lime-glow));
+  letter-spacing: -2px;
+}
+.logo-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 6px;
+  color: var(--text);
+  margin-top: -8px;
+}
+.logo-powered {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.tagline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 14vw, 72px);
+  line-height: 0.95;
+  color: var(--lime);
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 30px rgba(57,255,20,0.2));
+}
+.tagline-sub {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 300px;
+  margin: 0 auto 32px;
+}
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  background: var(--lime);
+  color: var(--navy);
+  border: none;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 3px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(57,255,20,0.3);
+}
+.btn-primary:hover { background: var(--lime2); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(57,255,20,0.4); }
+.btn-primary:active { transform: translateY(0); }
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin: 28px 0;
+}
+.home-stat {
+  background: var(--lime-dim);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+}
+.home-stat-val { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--lime); line-height:1; }
+.home-stat-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.countdown-card {
+  background: linear-gradient(135deg, var(--lime-dim), rgba(57,255,20,0.04));
+  border: 1px solid var(--lime);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.countdown-card::before {
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background: linear-gradient(90deg, transparent, var(--lime), transparent);
+}
+.cd-label { font-size:10px; color:var(--lime); letter-spacing:3px; text-transform:uppercase; margin-bottom:8px; }
+.cd-event { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:3px; color:var(--text); margin-bottom:4px; }
+.cd-days { font-family:'Bebas Neue',sans-serif; font-size:40px; color:var(--lime); line-height:1; }
+.cd-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+
+/* ═══ PAGE HEADER ═══ */
+.page-header {
+  padding: 20px 16px 16px;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.page-title { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:3px; color:var(--lime); }
+
+/* ═══ SELECTED BANNER ═══ */
+.selected-banner {
+  display: none;
+  margin: 0 16px 16px;
+  max-width: calc(480px - 32px);
+  margin-left: auto;
+  margin-right: auto;
+  background: linear-gradient(135deg, rgba(57,255,20,0.2), rgba(57,255,20,0.08));
+  border: 1px solid var(--lime);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lime);
+  display: none;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--lime-glow);
+}
+.selected-banner.show { display: flex; }
+.sb-dot { width:8px;height:8px;background:var(--lime);border-radius:50%;animation:pulse 1s infinite; flex-shrink:0; }
+.sb-name { flex:1; }
+.sb-clear { background:none;border:1px solid rgba(57,255,20,0.4);color:var(--lime);padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;font-weight:700; }
+
+/* ═══ TABS ═══ */
+.tabs-wrap { padding: 0 16px 12px; max-width: 480px; margin: 0 auto; }
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+}
+.tab-btn {
+  padding: 9px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.tab-btn.active { background: var(--lime); color: var(--navy); }
+
+/* ═══ LEAGUE SELECT ═══ */
+.league-select-wrap { padding: 0 16px 12px; max-width: 480px; margin: 0 auto; }
+.league-select {
+  width: 100%;
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 11px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2339ff14' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+.league-select:focus { outline: none; border-color: var(--lime); }
+.league-select option { background: var(--navy3); }
+
+/* ═══ MATCH CARDS ═══ */
+.matches-list { padding: 0 16px; max-width: 480px; margin: 0 auto; }
+.match-card {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.match-card::before {
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background: linear-gradient(90deg, transparent, rgba(57,255,20,0.3), transparent);
+  opacity:0;
+  transition: opacity 0.2s;
+}
+.match-card:hover { border-color: rgba(57,255,20,0.4); }
+.match-card:hover::before { opacity:1; }
+.mc-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.mc-league { display:flex; align-items:center; gap:6px; }
+.mc-league-logo { width:18px; height:18px; object-fit:contain; }
+.mc-league-name { font-size:11px; color:var(--lime); font-weight:700; text-transform:uppercase; letter-spacing:1px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.badge-live { font-size:10px; background:rgba(255,68,68,0.2); color:var(--red); padding:3px 8px; border-radius:20px; font-weight:700; display:flex; align-items:center; gap:4px; }
+.badge-ns { font-size:10px; background:rgba(255,165,0,0.15); color:var(--orange); padding:3px 8px; border-radius:20px; font-weight:700; }
+.badge-ht { font-size:10px; background:rgba(57,255,20,0.15); color:var(--lime); padding:3px 8px; border-radius:20px; font-weight:700; }
+.live-dot { width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulseDot 1s infinite; }
+@keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.mc-teams { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.mc-team { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.mc-logo { width:44px; height:44px; object-fit:contain; }
+.mc-name { font-size:11px; font-weight:700; text-align:center; color:var(--text); line-height:1.2; }
+.mc-score-wrap { text-align:center; min-width:70px; }
+.mc-score { font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--lime); line-height:1; letter-spacing:2px; }
+.mc-min { font-size:11px; color:var(--muted); margin-top:2px; }
+.mc-time { font-size:12px; color:var(--orange); font-weight:600; }
+
+.mc-goals { margin-bottom:10px; }
+.mc-goal-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.mc-goal-time { color:var(--lime); font-weight:700; min-width:30px; }
+
+.btn-players {
+  width:100%;
+  padding:11px;
+  background:none;
+  border:1px solid var(--border);
+  color:var(--lime);
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  letter-spacing:1px;
+  transition: all 0.2s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.btn-players:hover { background: var(--lime-dim); border-color: var(--lime); }
+.btn-players.open { background: var(--lime-dim); border-color: var(--lime); }
+
+/* ═══ PLAYERS LIST ═══ */
+.players-section { margin-top:12px; animation: fadeIn 0.3s ease; }
+.players-team-label {
+  font-size:10px;
+  font-weight:700;
+  color:var(--lime);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:10px 0 6px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:6px;
+}
+.player-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:all 0.2s;
+  border:1px solid transparent;
+  margin-bottom:4px;
+}
+.player-row:hover:not(.locked) { background:var(--lime-dim); border-color:var(--border); }
+.player-row.is-selected { background:rgba(57,255,20,0.15); border-color:var(--lime); box-shadow:var(--lime-glow); }
+.player-row.locked { opacity:0.35; cursor:not-allowed; filter:grayscale(0.5); }
+.player-photo { width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--navy2);flex-shrink:0;border:2px solid var(--border); }
+.player-photo.selected-photo { border-color:var(--lime); box-shadow:0 0 8px rgba(57,255,20,0.4); }
+.player-info { flex:1; min-width:0; }
+.player-name { font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.player-name.selected-name { color:var(--lime); }
+.player-sub { font-size:11px;color:var(--muted);margin-top:1px; }
+.player-right { display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0; }
+.player-goals-pill { background:var(--lime-dim);color:var(--lime);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700; }
+.risk-badge { padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700; }
+.risk-high { background:rgba(57,255,20,0.2);color:var(--lime); }
+.risk-med { background:rgba(255,165,0,0.2);color:var(--orange); }
+.risk-low-p { background:rgba(255,68,68,0.2);color:var(--red); }
+
+/* ═══ EMPTY STATE ═══ */
+.empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+.empty-text { font-size:14px; line-height:1.6; }
+
+/* ═══ MODAL ═══ */
+.modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  z-index:1000;
+  overflow-y:auto;
+  padding:20px 16px;
+  backdrop-filter:blur(4px);
+}
+.modal.open { display:flex; align-items:flex-start; justify-content:center; }
+.modal-inner {
+  background: linear-gradient(160deg, var(--navy3) 0%, var(--navy2) 100%);
+  border:1px solid rgba(57,255,20,0.3);
+  border-radius:16px;
+  padding:24px;
+  width:100%;
+  max-width:440px;
+  position:relative;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-inner::before {
+  content:'';
+  position:absolute;
+  top:0;left:20%;right:20%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--lime),transparent);
+  border-radius:2px;
+}
+.modal-close {
+  position:absolute;
+  top:16px;right:16px;
+  background:rgba(255,255,255,0.08);
+  border:none;
+  color:var(--text);
+  width:30px;height:30px;
+  border-radius:50%;
+  font-size:16px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s;
+}
+.modal-close:hover { background:rgba(255,255,255,0.15); }
+
+.m-player-header { display:flex; gap:14px; align-items:flex-start; margin-bottom:20px; }
+.m-photo { width:64px;height:64px;border-radius:12px;object-fit:cover;background:var(--navy);border:2px solid var(--border);flex-shrink:0; }
+.m-player-name { font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--lime); line-height:1; letter-spacing:1px; }
+.m-player-meta { font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5; }
+.m-badges { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+.m-badge { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700; }
+.mb-pos { background:rgba(57,255,20,0.15);color:var(--lime); }
+.mb-rating { background:rgba(255,165,0,0.15);color:var(--orange); }
+.mb-league { background:rgba(255,255,255,0.06);color:var(--muted); }
+
+.m-prob-section { margin-bottom:20px; }
+.m-prob-label { display:flex;justify-content:space-between;align-items:center;margin-bottom:8px; }
+.m-prob-title { font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px; }
+.m-prob-value { font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--lime); }
+.m-prob-bar-bg { height:10px;background:rgba(255,255,255,0.08);border-radius:5px;overflow:hidden; }
+.m-prob-bar-fill { height:100%;border-radius:5px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);background:linear-gradient(90deg,#39ff14,#2de010); }
+.m-prob-sub { display:flex;justify-content:space-between;margin-top:6px; }
+.m-prob-risk { font-size:11px;font-weight:700; }
+.m-prob-match { font-size:11px;color:var(--muted); }
+
+.m-stats-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px; }
+.m-stat-box { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px; }
+.m-stat-val { font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--lime);line-height:1; }
+.m-stat-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px; }
+
+.m-extra-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px; }
+.m-extra-box { background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center; }
+.m-extra-val { font-size:16px;color:var(--lime);font-weight:700; }
+.m-extra-lbl { font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px; }
+
+.m-section-title { font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px; }
+
+.m-goal-history { margin-bottom:16px; }
+.m-gh-bar { display:flex;gap:4px;margin-bottom:8px; }
+.gh-item { flex:1;height:32px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:all 0.3s; }
+.gh-goal { background:rgba(57,255,20,0.25);color:var(--lime);border:1px solid rgba(57,255,20,0.4); }
+.gh-no { background:rgba(255,68,68,0.15);color:rgba(255,68,68,0.6);border:1px solid rgba(255,68,68,0.2); }
+.m-gh-list { display:flex;flex-direction:column;gap:4px; }
+.gh-row { display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(255,255,255,0.03);border-radius:6px;font-size:12px; }
+.gh-match { color:var(--muted); }
+.gh-result-win { color:var(--lime);font-weight:700; }
+.gh-result-loss { color:rgba(255,68,68,0.7);font-weight:700; }
+
+.m-odds { display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px; }
+.m-odd-box { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center; }
+.m-odd-val { font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--lime); }
+.m-odd-lbl { font-size:10px;color:var(--muted);margin-top:2px; }
+.m-odd-disclaimer { font-size:9px;color:rgba(255,255,255,0.2);text-align:center;margin-bottom:12px; }
+
+.btn-select { width:100%;padding:16px;background:var(--lime);color:var(--navy);border:none;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;border-radius:8px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 15px rgba(57,255,20,0.3); }
+.btn-select:hover { background:var(--lime2);transform:translateY(-1px); }
+.btn-deselect { background:rgba(255,68,68,0.15);color:var(--red);border:1px solid rgba(255,68,68,0.3); }
+.btn-disabled-sel { background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border); cursor:not-allowed; }
+
+/* ═══ CLASSIFICA ═══ */
+.leaderboard { padding:0 16px; max-width:480px;margin:0 auto; }
+.lb-row {
+  display:flex;align-items:center;gap:12px;
+  padding:14px;
+  background:var(--navy3);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:8px;
+  transition:all 0.2s;
+}
+.lb-row:hover { border-color:rgba(57,255,20,0.4); }
+.lb-row.lb-me { border-color:var(--lime);background:rgba(57,255,20,0.08);box-shadow:var(--lime-glow); }
+.lb-rank { font-family:'Bebas Neue',sans-serif;font-size:22px;min-width:32px;text-align:center; }
+.lb-avatar { width:36px;height:36px;border-radius:50%;background:var(--lime-dim);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
+.lb-name { flex:1;font-weight:700;font-size:14px; }
+.lb-streak { font-size:12px;color:var(--orange);font-weight:700;margin-top:1px; }
+.lb-pts { font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--lime); }
+
+/* ═══ PROFILO ═══ */
+.profile-section { padding:0 16px;max-width:480px;margin:0 auto; }
+.profile-hero { background:linear-gradient(135deg,rgba(57,255,20,0.1),rgba(57,255,20,0.03)); border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;margin-bottom:16px; }
+.profile-avatar { width:72px;height:72px;border-radius:50%;background:var(--lime-dim);border:3px solid var(--lime);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px; }
+.profile-name { font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--lime); }
+.profile-level { font-size:12px;color:var(--muted);margin-top:4px; }
+.profile-stats { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px; }
+.ps-box { background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px; }
+.ps-val { font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--lime);line-height:1; }
+.ps-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px; }
+.badges-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px; }
+.badge-box { background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center; }
+.badge-emoji { font-size:30px;margin-bottom:6px; }
+.badge-label { font-size:10px;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+.badge-desc { font-size:9px;color:var(--muted);margin-top:2px; }
+
+/* ═══ SFIDE ═══ */
+.sfide-section { padding:0 16px;max-width:480px;margin:0 auto; }
+.sfida-card { background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px; }
+.sfida-vs { font-weight:700;font-size:14px;color:var(--lime);margin-bottom:6px; }
+.sfida-detail { font-size:12px;color:var(--muted); }
+.sfida-status { display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px; }
+.s-active { background:rgba(255,165,0,0.15);color:var(--orange); }
+.s-win { background:rgba(57,255,20,0.15);color:var(--lime); }
+.sfida-section-label { font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin:16px 0 8px; }
+
+/* ═══ PREMIUM BANNER ═══ */
+.premium-banner {
+  margin:0 16px 12px;
+  max-width:calc(480px - 32px);
+  margin-left:auto;margin-right:auto;
+  background:linear-gradient(135deg,rgba(255,165,0,0.12),rgba(255,165,0,0.04));
+  border:1px solid rgba(255,165,0,0.3);
+  border-radius:10px;
+  padding:12px 16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:12px;
+}
+.pb-icon { font-size:20px;flex-shrink:0; }
+.pb-text { flex:1;color:var(--muted);line-height:1.4; }
+.pb-text strong { color:var(--orange); }
+.pb-btn { background:var(--orange);color:var(--navy);border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0; }
+
+/* ═══ AFFILIATE DISCLAIMER ═══ */
+.affiliate-note { font-size:9px;color:rgba(255,255,255,0.2);text-align:center;padding:8px 16px;max-width:480px;margin:0 auto; }
+
+/* ═══ NAV ═══ */
+nav {
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(10,14,39,0.96);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;
+  z-index:100;
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.nav-btn {
+  flex:1;padding:10px 4px 8px;
+  background:none;border:none;
+  color:var(--muted);
+  font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:all 0.2s;
+  position:relative;
+}
+.nav-icon { font-size:22px;line-height:1; }
+.nav-btn.active { color:var(--lime); }
+.nav-btn.active::before {
+  content:'';
+  position:absolute;
+  top:0;left:20%;right:20%;
+  height:2px;
+  background:var(--lime);
+  border-radius:0 0 2px 2px;
+}
+
+/* ═══ NOTIFICATION ═══ */
+.toast {
+  position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);
+  background:var(--lime);color:var(--navy);
+  padding:12px 20px;border-radius:30px;
+  font-size:13px;font-weight:700;
+  z-index:2000;
+  white-space:nowrap;
+  transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 4px 20px rgba(57,255,20,0.4);
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ═══ LOADING ═══ */
+.loading-state { text-align:center;padding:40px 20px; }
+.loading-dot { display:inline-block;width:8px;height:8px;background:var(--lime);border-radius:50%;margin:0 3px;animation:bounce 1.2s infinite; }
+.loading-dot:nth-child(2){animation-delay:0.2s}
+.loading-dot:nth-child(3){animation-delay:0.4s}
+@keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+</style>
+</head>
+<body>
+
+<!-- ═══ HOME ═══ -->
+<div id="home" class="page active">
+  <div class="home-hero">
+    <div class="container" style="width:100%;">
+      <div class="logo-wrap">
+        <div class="logo-x">[X]</div>
+        <div class="logo-text">STREAK MASTER</div>
+        <div class="logo-powered">powered by NEXA</div>
+      </div>
+      <div class="tagline">ANTICIPA<br>DECIDI<br>VINCI</div>
+      <p class="tagline-sub">Scegli 1 giocatore che segnerà nel match LIVE. Azzecca? Streak +1. Sbaglia? Reset totale.</p>
+      <button class="btn-primary" onclick="switchPage('live',this)">🚀 INIZIA A GIOCARE</button>
+      <div class="home-grid">
+        <div class="home-stat">
+          <div class="home-stat-val" id="h-live">—</div>
+          <div class="home-stat-lbl">Live ora</div>
+        </div>
+        <div class="home-stat">
+          <div class="home-stat-val">🔥12</div>
+          <div class="home-stat-lbl">Streak</div>
+        </div>
+        <div class="home-stat">
+          <div class="home-stat-val">485</div>
+          <div class="home-stat-lbl">Punti</div>
+        </div>
+      </div>
+      <div class="countdown-card">
+        <div class="cd-label">⏰ prossimo grande evento</div>
+        <div class="cd-event">🌍 MONDIALI 2026</div>
+        <div class="cd-days" id="cd-days">—</div>
+        <div class="cd-sub">giorni al via</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LIVE ═══ -->
+<div id="live" class="page">
+  <div class="page-header">
+    <span class="page-title">⚽ PARTITE</span>
+  </div>
+
+  <div id="selected-banner" class="selected-banner">
+    <div class="sb-dot"></div>
+    <div class="sb-name">Giocatore: <strong id="sb-name-txt">—</strong></div>
+    <button class="sb-clear" onclick="clearSelection()">✕ Cambia</button>
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="setTab('live',this)">🔴 LIVE</button>
+      <button class="tab-btn" onclick="setTab('today',this)">📅 OGGI</button>
+      <button class="tab-btn" onclick="setTab('tomorrow',this)">⏭ DOMANI</button>
+    </div>
+  </div>
+
+  <div class="league-select-wrap">
+    <select class="league-select" id="leagueSelect" onchange="applyLeagueFilter()">
+      <option value="all">🌍 Tutti i campionati</option>
+    </select>
+  </div>
+
+  <div class="matches-list" id="matches-list">
+    <div class="loading-state">
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SFIDE ═══ -->
+<div id="sfide" class="page">
+  <div class="page-header"><span class="page-title">🎯 SFIDE 1V1</span></div>
+  <div class="sfide-section">
+    <button class="btn-primary" style="margin-bottom:20px;" onclick="openSfidaModal()">+ NUOVA SFIDA</button>
+    <div class="sfida-section-label">ATTIVE (2)</div>
+    <div class="sfida-card">
+      <div class="sfida-vs">🎮 VS Marco · Sfida #42</div>
+      <div class="sfida-detail">Tu: Lautaro Martinez · Marco: Kylian Mbappé</div>
+      <span class="sfida-status s-active">⏳ IN CORSO</span>
+    </div>
+    <div class="sfida-card">
+      <div class="sfida-vs">🎮 VS Anna · Sfida #38</div>
+      <div class="sfida-detail">Tu: Victor Osimhen · Anna: Mohamed Salah</div>
+      <span class="sfida-status s-active">⏳ IN CORSO</span>
+    </div>
+    <div class="sfida-section-label">COMPLETATE</div>
+    <div class="sfida-card">
+      <div class="sfida-vs">VS Luigi · Sfida #31</div>
+      <div class="sfida-detail">Haaland ⚽ ha segnato! Hai vinto +50 punti</div>
+      <span class="sfida-status s-win">✓ VINTO</span>
+    </div>
+    <div class="sfida-card">
+      <div class="sfida-vs">VS Giulia · Sfida #28</div>
+      <div class="sfida-detail">Kane non ha segnato. Perdita streak.</div>
+      <span class="sfida-status" style="background:rgba(255,68,68,0.15);color:var(--red);">✗ PERSO</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CLASSIFICA ═══ -->
+<div id="classifica" class="page">
+  <div class="page-header"><span class="page-title">🏆 CLASSIFICA</span></div>
+  <div class="leaderboard">
+    <div class="lb-row">
+      <div class="lb-rank" style="color:var(--gold);">🥇</div>
+      <div class="lb-avatar">🦅</div>
+      <div style="flex:1;"><div class="lb-name">FalconStrike</div><div class="lb-streak">🔥 Streak 24</div></div>
+      <div class="lb-pts">2847</div>
+    </div>
+    <div class="lb-row lb-me">
+      <div class="lb-rank" style="color:var(--lime);">2</div>
+      <div class="lb-avatar" style="border-color:var(--lime);">👤</div>
+      <div style="flex:1;"><div class="lb-name" style="color:var(--lime);">Tu · Enrico</div><div class="lb-streak">🔥 Streak 12</div></div>
+      <div class="lb-pts">485</div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-rank" style="color:#cd7f32;">🥉</div>
+      <div class="lb-avatar">🐉</div>
+      <div style="flex:1;"><div class="lb-name">DragonKick</div><div class="lb-streak">🔥 Streak 8</div></div>
+      <div class="lb-pts">312</div>
+    </div>
+    <div class="lb-row"><div class="lb-rank" style="color:var(--muted);">4</div><div class="lb-avatar">🦉</div><div style="flex:1;"><div class="lb-name">NightOwl</div><div class="lb-streak">🔥 Streak 5</div></div><div class="lb-pts">201</div></div>
+    <div class="lb-row"><div class="lb-rank" style="color:var(--muted);">5</div><div class="lb-avatar">⚡</div><div style="flex:1;"><div class="lb-name">GoalMaster</div><div class="lb-streak">🔥 Streak 4</div></div><div class="lb-pts">198</div></div>
+    <div class="lb-row"><div class="lb-rank" style="color:var(--muted);">6</div><div class="lb-avatar">🎯</div><div style="flex:1;"><div class="lb-name">SnipeKing</div><div class="lb-streak">🔥 Streak 3</div></div><div class="lb-pts">145</div></div>
+  </div>
+</div>
+
+<!-- ═══ PROFILO ═══ -->
+<div id="profilo" class="page">
+  <div class="page-header"><span class="page-title">👤 PROFILO</span></div>
+  <div class="profile-section">
+    <div class="profile-hero">
+      <div class="profile-avatar">👤</div>
+      <div class="profile-name">ENRICO</div>
+      <div class="profile-level">⭐ Livello 7 · Predictor Pro</div>
+    </div>
+    <div class="profile-stats">
+      <div class="ps-box"><div class="ps-val" style="color:var(--orange);">🔥 12</div><div class="ps-lbl">Streak attuale</div></div>
+      <div class="ps-box"><div class="ps-val">485</div><div class="ps-lbl">Punti totali</div></div>
+      <div class="ps-box"><div class="ps-val">68%</div><div class="ps-lbl">Win rate</div></div>
+      <div class="ps-box"><div class="ps-val">34</div><div class="ps-lbl">Picks totali</div></div>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">BADGE SBLOCCATI</div>
+    <div class="badges-grid">
+      <div class="badge-box"><div class="badge-emoji">🔥</div><div class="badge-label">Streak 10</div><div class="badge-desc">10 picks corretti</div></div>
+      <div class="badge-box"><div class="badge-emoji">⚡</div><div class="badge-label">First Win</div><div class="badge-desc">Prima vittoria</div></div>
+      <div class="badge-box"><div class="badge-emoji">🎯</div><div class="badge-label">Sniper</div><div class="badge-desc">5 attaccanti</div></div>
+      <div class="badge-box" style="opacity:0.3;"><div class="badge-emoji">💎</div><div class="badge-label">Leggenda</div><div class="badge-desc">Streak 30</div></div>
+      <div class="badge-box" style="opacity:0.3;"><div class="badge-emoji">🌍</div><div class="badge-label">Globetrotter</div><div class="badge-desc">5 leghe</div></div>
+      <div class="badge-box" style="opacity:0.3;"><div class="badge-emoji">👑</div><div class="badge-label">Re del Gol</div><div class="badge-desc">Top classifica</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NUOVA SFIDA MODAL ═══ -->
+<div id="sfidaModal" class="modal">
+  <div class="modal-inner" style="max-width:400px;">
+    <button class="modal-close" onclick="closeSfidaModal()">✕</button>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--lime);letter-spacing:2px;margin-bottom:20px;">🎯 NUOVA SFIDA</div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">IL TUO GIOCATORE</div>
+      <div id="sfida-my-player" style="background:var(--lime-dim);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--lime);font-weight:700;">
+        — Seleziona prima un giocatore dalla sezione LIVE —
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">SFIDA UN AMICO</div>
+      <input id="sfida-friend" type="text" placeholder="Username o email amico..." style="width:100%;background:var(--navy3);border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:8px;font-size:13px;outline:none;">
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">MESSAGGIO (opzionale)</div>
+      <input id="sfida-msg" type="text" placeholder="Es: Ti sfido! Scommetto sul mio attaccante 💪" style="width:100%;background:var(--navy3);border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:8px;font-size:13px;outline:none;">
+    </div>
+
+    <div style="background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.2);border-radius:8px;padding:12px;margin-bottom:20px;font-size:12px;color:var(--muted);line-height:1.5;">
+      🏆 La sfida è gratuita · Solo punti e badge in palio · Nessun pagamento richiesto
+    </div>
+
+    <button class="btn-primary" onclick="sendSfida()" style="font-size:16px;">📨 INVIA SFIDA</button>
+  </div>
+</div>
+
+<!-- ═══ PLAYER MODAL ═══ -->
+<div id="playerModal" class="modal">
+  <div class="modal-inner">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="m-player-header">
+      <img id="m-photo" class="m-photo" src="" alt="">
+      <div>
+        <div class="m-player-name" id="m-name"></div>
+        <div class="m-player-meta" id="m-meta"></div>
+        <div class="m-badges" id="m-badges"></div>
+      </div>
+    </div>
+    <div class="m-prob-section">
+      <div class="m-prob-label">
+        <span class="m-prob-title">Probabilità Gol</span>
+        <span class="m-prob-value" id="m-prob-val">—%</span>
+      </div>
+      <div class="m-prob-bar-bg"><div class="m-prob-bar-fill" id="m-prob-bar" style="width:0%"></div></div>
+      <div class="m-prob-sub">
+        <span class="m-prob-risk" id="m-risk"></span>
+        <span class="m-prob-match" id="m-match-name"></span>
+      </div>
+    </div>
+    <div class="m-stats-grid">
+      <div class="m-stat-box"><div class="m-stat-val" id="m-goals">0</div><div class="m-stat-lbl">⚽ Gol stagione</div></div>
+      <div class="m-stat-box"><div class="m-stat-val" id="m-assists">0</div><div class="m-stat-lbl">🎯 Assist</div></div>
+      <div class="m-stat-box"><div class="m-stat-val" id="m-shots">0</div><div class="m-stat-lbl">🔫 Tiri (porta)</div></div>
+      <div class="m-stat-box"><div class="m-stat-val" id="m-passes">0</div><div class="m-stat-lbl">📤 Passaggi</div></div>
+    </div>
+    <div class="m-extra-grid">
+      <div class="m-extra-box"><div class="m-extra-val" id="m-min">0'</div><div class="m-extra-lbl">Minuti</div></div>
+      <div class="m-extra-box"><div class="m-extra-val" id="m-apps">0</div><div class="m-extra-lbl">Presenze</div></div>
+      <div class="m-extra-box"><div class="m-extra-val" id="m-gpg">0</div><div class="m-extra-lbl">Gol/Partita</div></div>
+    </div>
+    <div class="m-section-title">⚽ STORICO GOL — ULTIMI 5 MATCH</div>
+    <div class="m-goal-history">
+      <div class="m-gh-bar" id="m-gh-bar"></div>
+      <div class="m-gh-list" id="m-gh-list"></div>
+    </div>
+    <div class="m-section-title">📈 QUOTE INDICATIVE</div>
+    <div class="m-odds">
+      <div class="m-odd-box"><div class="m-odd-val" id="m-q1">—</div><div class="m-odd-lbl">Segna</div></div>
+      <div class="m-odd-box"><div class="m-odd-val" id="m-q2">—</div><div class="m-odd-lbl">Non segna</div></div>
+      <div class="m-odd-box"><div class="m-odd-val" id="m-q3">—</div><div class="m-odd-lbl">2+ gol</div></div>
+    </div>
+    <div class="m-odd-disclaimer">18+ · Quote indicative · Gioca responsabilmente · Non sono offerte di scommessa</div>
+    <button class="btn-select" id="m-select-btn" onclick="confirmSelect()">✓ SELEZIONA GIOCATORE</button>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <button class="nav-btn active" onclick="switchPage('home',this)"><span class="nav-icon">🏠</span>HOME</button>
+  <button class="nav-btn" onclick="switchPage('live',this)"><span class="nav-icon">⚽</span>LIVE</button>
+  <button class="nav-btn" onclick="switchPage('sfide',this)"><span class="nav-icon">🎯</span>SFIDE</button>
+  <button class="nav-btn" onclick="switchPage('classifica',this)"><span class="nav-icon">🏆</span>CLASS</button>
+  <button class="nav-btn" onclick="switchPage('profilo',this)"><span class="nav-icon">👤</span>PROFILO</button>
+</nav>
+
+<script>
+// ═══ STATE ═══
+let allMatches = [];
+let currentTab = 'live';
+let currentLeague = 'all';
+let selectedPlayer = null;
+let currentModalPlayer = null;
+let currentModalMatch = '';
+const playerCache = {};
+
+// ═══ INIT ═══
+initHome();
+loadTab('live');
+
+function initHome() {
+  const diff = Math.ceil((new Date('2026-06-11') - new Date()) / 86400000);
+  document.getElementById('cd-days').textContent = diff > 0 ? diff : '🎉';
+  loadLiveCount();
+}
+
+async function loadLiveCount() {
+  try {
+    const r = await fetch('https://nexa-streak-master-production.up.railway.app/api/matches/live');
+    const d = await r.json();
+    document.getElementById('h-live').textContent = d.length;
+  } catch(e) {}
+}
+
+// ═══ TAB SWITCHING ═══
+function setTab(tab, btn) {
+  currentTab = tab;
+  currentLeague = 'all';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadTab(tab);
+}
+
+async function loadTab(tab) {
+  document.getElementById('matches-list').innerHTML = `
+    <div class="loading-state">
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+    </div>`;
+
+  try {
+    const r = await fetch(`https://nexa-streak-master-production.up.railway.app/api/matches/${tab}`);
+    allMatches = await r.json();
+  } catch(e) {
+    allMatches = [];
+  }
+
+  buildLeagueSelect(allMatches);
+  renderMatches(allMatches);
+}
+
+// ═══ LEAGUE FILTER ═══
+function buildLeagueSelect(matches) {
+  const leagues = [...new Set(matches.map(m => m.league.name))].sort();
+  const sel = document.getElementById('leagueSelect');
+  sel.innerHTML = `<option value="all">🌍 Tutti i campionati (${matches.length})</option>` +
+    leagues.map(l => {
+      const count = matches.filter(m => m.league.name === l).length;
+      return `<option value="${l}">${l} (${count})</option>`;
+    }).join('');
+  sel.value = currentLeague;
+}
+
+function applyLeagueFilter() {
+  currentLeague = document.getElementById('leagueSelect').value;
+  const filtered = currentLeague === 'all' ? allMatches : allMatches.filter(m => m.league.name === currentLeague);
+  renderMatches(filtered);
+}
+
+// ═══ RENDER MATCHES ═══
+function renderMatches(matches) {
+  if (!matches.length) {
+    document.getElementById('matches-list').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">Nessuna partita disponibile<br>per questa selezione</div>
+      </div>`;
+    return;
+  }
+
+  const html = matches.map(m => {
+    const isLive = m.status === '1H' || m.status === '2H' || m.status === 'HT' || m.status === 'ET';
+    const isNS = m.status === 'NS';
+    const matchTime = m.date ? new Date(m.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}) : '';
+
+    const badgeHtml = isLive
+      ? `<span class="badge-live"><span class="live-dot"></span>${m.minute || '?'}'</span>`
+      : m.status === 'HT'
+      ? `<span class="badge-ht">⏸ INTERVALLO</span>`
+      : `<span class="badge-ns">${matchTime || m.status}</span>`;
+
+    const scoreHtml = isLive || m.status === 'HT'
+      ? `<div class="mc-score">${m.home.goals ?? '0'} - ${m.away.goals ?? '0'}</div><div class="mc-min">⏱ ${m.minute}'</div>`
+      : `<div class="mc-time">${matchTime}</div>`;
+
+    const goalsHtml = (m.events||[]).slice(0,3).map(e =>
+      `<div class="mc-goal-item"><span class="mc-goal-time">${e.time?.elapsed}'</span><span>⚽ ${e.player?.name||'?'}</span></div>`
+    ).join('');
+
+    return `
+      <div class="match-card">
+        <div class="mc-header">
+          <div class="mc-league">
+            <img class="mc-league-logo" src="${m.league.logo||''}" alt="" onerror="this.style.display='none'">
+            <span class="mc-league-name">${m.league.name} · ${m.league.country}</span>
+          </div>
+          ${badgeHtml}
+        </div>
+        <div class="mc-teams">
+          <div class="mc-team">
+            <img class="mc-logo" src="${m.home.logo}" alt="${m.home.name}" onerror="this.src=''">
+            <div class="mc-name">${m.home.name}</div>
+          </div>
+          <div class="mc-score-wrap">${scoreHtml}</div>
+          <div class="mc-team">
+            <img class="mc-logo" src="${m.away.logo}" alt="${m.away.name}" onerror="this.src=''">
+            <div class="mc-name">${m.away.name}</div>
+          </div>
+        </div>
+        ${goalsHtml ? `<div class="mc-goals">${goalsHtml}</div>` : ''}
+        <button class="btn-players" id="btn_${m.id}" onclick="togglePlayers(${m.home.id},${m.away.id},${m.league.season||2025},'${esc(m.home.name)} vs ${esc(m.away.name)}','btn_${m.id}','pl_${m.id}')">
+          🎯 VEDI GIOCATORI
+        </button>
+        <div id="pl_${m.id}" style="display:none;" class="players-section"></div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('matches-list').innerHTML = html;
+}
+
+function esc(s) { return (s||'').replace(/'/g,"\\'"); }
+
+// ═══ PLAYERS ═══
+async function togglePlayers(homeId, awayId, season, matchName, btnId, containerId) {
+  const btn = document.getElementById(btnId);
+  const container = document.getElementById(containerId);
+
+  if (container.style.display !== 'none') {
+    container.style.display = 'none';
+    btn.classList.remove('open');
+    btn.innerHTML = '🎯 VEDI GIOCATORI';
+    return;
+  }
+
+  btn.innerHTML = '<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>';
+  btn.disabled = true;
+
+  const [home, away] = await Promise.all([
+    getPlayers(homeId, season),
+    getPlayers(awayId, season)
+  ]);
+
+  const teamNames = matchName.split(' vs ');
+  container.innerHTML = renderPlayerList(home, teamNames[0]||'Casa', matchName) +
+                        renderPlayerList(away, teamNames[1]||'Ospiti', matchName);
+  container.style.display = 'block';
+  btn.innerHTML = '✕ NASCONDI';
+  btn.classList.add('open');
+  btn.disabled = false;
+}
+
+async function getPlayers(teamId, season) {
+  const k = `${teamId}_${season}`;
+  if (playerCache[k]) return playerCache[k];
+  try {
+    const r = await fetch(`https://nexa-streak-master-production.up.railway.app/api/team/${teamId}/players?season=${season}`);
+    const d = await r.json();
+    playerCache[k] = d;
+    return d;
+  } catch(e) { return []; }
+}
+
+function renderPlayerList(players, teamName, matchName) {
+  if (!players.length) return `
+    <div class="players-team-label">${teamName}</div>
+    <div style="font-size:12px;color:var(--muted);padding:8px 0;text-align:center;">Statistiche non disponibili</div>`;
+
+  return `<div class="players-team-label">${teamName}</div>` +
+    players.map(p => {
+      const prob = calcProb(p);
+      const isSelected = selectedPlayer && selectedPlayer.id === p.id;
+      const isLocked = selectedPlayer && !isSelected;
+      const riskClass = prob>=60?'risk-high':prob>=40?'risk-med':'risk-low-p';
+      const riskText = prob>=60?'🟢 Alta':prob>=40?'🟡 Media':'🔴 Bassa';
+      const encodedP = JSON.stringify(p).replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      const encodedM = matchName.replace(/'/g,"\\'");
+
+      return `<div class="player-row ${isSelected?'is-selected':''} ${isLocked?'locked':''}"
+        onclick="${isLocked?'showToast(&quot;Hai già selezionato '+selectedPlayer.name+'! Clicca Cambia per modificare.&quot;)':
+        `openModal(JSON.parse(this.dataset.player), this.dataset.match)`}"
+        data-player="${encodedP}" data-match="${encodedM}">
+        <img class="player-photo ${isSelected?'selected-photo':''}" src="${p.photo||''}" alt="" onerror="this.src=''">
+        <div class="player-info">
+          <div class="player-name ${isSelected?'selected-name':''}">${isSelected?'✓ ':''}${p.name}</div>
+          <div class="player-sub">${p.position} · ⭐${parseFloat(p.rating||0).toFixed(1)} · ${p.league}</div>
+        </div>
+        <div class="player-right">
+          <span class="player-goals-pill">⚽ ${p.goals}</span>
+          <span class="risk-badge ${riskClass}">${riskText}</span>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ═══ PROBABILITY ═══
+function calcProb(p) {
+  let prob = 15;
+  if (p.goals > 0) prob += Math.min(p.goals * 5, 30);
+  if (p.shots > 2) prob += 8;
+  if (p.shotsOn > 1) prob += 7;
+  if (['Attacker','Forward'].includes(p.position)) prob += 20;
+  else if (p.position === 'Midfielder') prob += 8;
+  if (p.rating && parseFloat(p.rating) > 7.5) prob += 10;
+  return Math.min(Math.max(prob, 10), 90);
+}
+
+function calcOdds(prob) {
+  const p = Math.max(prob, 5) / 100;
+  return { q1: (1/p).toFixed(2), q2: (1/(1-p+0.01)).toFixed(2), q3: (1/(p*0.25)).toFixed(2) };
+}
+
+// ═══ MODAL ═══
+function openModal(player, matchName) {
+  currentModalPlayer = player;
+  currentModalMatch = matchName;
+
+  const prob = calcProb(player);
+  const odds = calcOdds(prob);
+  const gpg = player.appearances > 0 ? (player.goals / player.appearances).toFixed(2) : '0.00';
+
+  // Header
+  document.getElementById('m-photo').src = player.photo || '';
+  document.getElementById('m-name').textContent = player.name;
+  document.getElementById('m-meta').textContent = `${player.nationality||'?'} · ${player.age||'?'} anni · ${player.league}`;
+  document.getElementById('m-badges').innerHTML = `
+    <span class="m-badge mb-pos">${player.position||'?'}</span>
+    <span class="m-badge mb-rating">⭐ ${parseFloat(player.rating||0).toFixed(1)}</span>
+  `;
+
+  // Probability
+  document.getElementById('m-prob-val').textContent = prob + '%';
+  setTimeout(() => document.getElementById('m-prob-bar').style.width = prob + '%', 50);
+  document.getElementById('m-match-name').textContent = matchName;
+  const riskColor = prob>=60?'var(--lime)':prob>=40?'var(--orange)':'var(--red)';
+  const riskLabel = prob>=60?'🟢 Alta probabilità':prob>=40?'🟡 Probabilità media':'🔴 Bassa probabilità';
+  document.getElementById('m-risk').innerHTML = `<span style="color:${riskColor};font-weight:700;">${riskLabel}</span>`;
+
+  // Stats
+  document.getElementById('m-goals').textContent = player.goals||0;
+  document.getElementById('m-assists').textContent = player.assists||0;
+  document.getElementById('m-shots').textContent = `${player.shots||0}(${player.shotsOn||0})`;
+  document.getElementById('m-passes').textContent = player.passes||0;
+  document.getElementById('m-min').textContent = (player.minutes||0)+"'";
+  document.getElementById('m-apps').textContent = player.appearances||0;
+  document.getElementById('m-gpg').textContent = gpg;
+
+  // Storico gol REALE
+  document.getElementById('m-gh-bar').innerHTML = `<span style="color:var(--muted);font-size:11px;">⏳ Caricamento storico reale...</span>`;
+  document.getElementById('m-gh-list').innerHTML = '';
+  loadPlayerHistory(player.id).then(history => {
+    if (history && history.length > 0) {
+      document.getElementById('m-gh-bar').innerHTML = history.map(h => {
+        const tip = `${h.home} vs ${h.away} (${h.score})`;
+        return `<div class="gh-item ${h.goals>0?'gh-goal':'gh-no'}" title="${tip}">${h.goals>0?'⚽':'✗'}</div>`;
+      }).join('');
+      document.getElementById('m-gh-list').innerHTML = history.map(h => {
+        const d = new Date(h.date).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+        const rc = h.result==='W'?'var(--lime)':h.result==='D'?'var(--orange)':'var(--red)';
+        return `<div class="gh-row">
+          <span class="gh-match">${d} · ${h.home} vs ${h.away}</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="color:${rc};font-size:10px;font-weight:700;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">${h.result} ${h.score}</span>
+            <span class="${h.goals>0?'gh-result-win':'gh-result-loss'}">${h.goals>0?`⚽ ${h.goals} GOL`:'✗ No gol'}</span>
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      document.getElementById('m-gh-bar').innerHTML = `<span style="color:var(--muted);font-size:11px;">Dati storici non disponibili per questo giocatore</span>`;
+      document.getElementById('m-gh-list').innerHTML = '';
+    }
+  });
+
+  // Odds
+  document.getElementById('m-q1').textContent = odds.q1;
+  document.getElementById('m-q2').textContent = odds.q2;
+  document.getElementById('m-q3').textContent = odds.q3;
+
+  // Button state
+  const btn = document.getElementById('m-select-btn');
+  if (selectedPlayer && selectedPlayer.id === player.id) {
+    btn.textContent = '✕ DESELEZIONA';
+    btn.className = 'btn-select btn-deselect';
+  } else if (selectedPlayer) {
+    btn.textContent = '❌ HAI GIÀ UN GIOCATORE SCELTO';
+    btn.className = 'btn-select btn-disabled-sel';
+  } else {
+    btn.textContent = '✓ SELEZIONA GIOCATORE';
+    btn.className = 'btn-select';
+  }
+
+  document.getElementById('playerModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('playerModal').classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(() => {
+    document.getElementById('m-prob-bar').style.width = '0%';
+  }, 300);
+}
+
+function confirmSelect() {
+  if (!currentModalPlayer) return;
+
+  if (selectedPlayer && selectedPlayer.id === currentModalPlayer.id) {
+    selectedPlayer = null;
+    updateSelectedBanner();
+    closeModal();
+    showToast('🔄 Selezione annullata');
+    reRenderPlayers();
+    return;
+  }
+
+  if (selectedPlayer) {
+    showToast('❌ Devi prima deselezionare ' + selectedPlayer.name);
+    return;
+  }
+
+  selectedPlayer = currentModalPlayer;
+  updateSelectedBanner();
+  closeModal();
+  showToast('✓ ' + selectedPlayer.name + ' selezionato! Buona fortuna! 🍀');
+  reRenderPlayers();
+}
+
+function clearSelection() {
+  selectedPlayer = null;
+  updateSelectedBanner();
+  showToast('🔄 Selezione annullata');
+  reRenderPlayers();
+}
+
+function updateSelectedBanner() {
+  const banner = document.getElementById('selected-banner');
+  if (selectedPlayer) {
+    document.getElementById('sb-name-txt').textContent = selectedPlayer.name;
+    banner.classList.add('show');
+  } else {
+    banner.classList.remove('show');
+  }
+}
+
+function reRenderPlayers() {
+  // Aggiorna tutti i player rows visibili
+  document.querySelectorAll('.player-row').forEach(row => {
+    try {
+      const p = JSON.parse(row.dataset.player || '{}');
+      if (!p.id) return;
+      const isSelected = selectedPlayer && selectedPlayer.id === p.id;
+      const isLocked = selectedPlayer && !isSelected;
+      row.className = `player-row ${isSelected?'is-selected':''} ${isLocked?'locked':''}`;
+      const nameEl = row.querySelector('.player-name');
+      if (nameEl) {
+        nameEl.className = `player-name ${isSelected?'selected-name':''}`;
+        nameEl.textContent = (isSelected ? '✓ ' : '') + p.name;
+      }
+      const photoEl = row.querySelector('.player-photo');
+      if (photoEl) {
+        photoEl.className = `player-photo ${isSelected?'selected-photo':''}`;
+      }
+    } catch(e) {}
+  });
+}
+
+// ═══ PAGE SWITCH ═══
+function switchPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (id === 'live' && !allMatches.length) loadTab('live');
+}
+
+// ═══ TOAST ═══
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Close modal on backdrop click
+document.getElementById('playerModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('sfidaModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSfidaModal();
+});
+
+// ═══ STORICO GOL REALE ═══
+async function loadPlayerHistory(playerId) {
+  try {
+    const r = await fetch(`https://nexa-streak-master-production.up.railway.app/api/player/${playerId}/history?season=2025`);
+    return await r.json();
+  } catch(e) { return []; }
+}
+
+// ═══ SFIDA MODAL ═══
+function openSfidaModal() {
+  const myPlayerEl = document.getElementById('sfida-my-player');
+  if (selectedPlayer) {
+    myPlayerEl.innerHTML = `✓ ${selectedPlayer.name} · ${selectedPlayer.position} · ⚽ ${selectedPlayer.goals} gol`;
+    myPlayerEl.style.color = 'var(--lime)';
+  } else {
+    myPlayerEl.innerHTML = '⚠️ Seleziona prima un giocatore dalla sezione LIVE';
+    myPlayerEl.style.color = 'var(--orange)';
+  }
+  document.getElementById('sfidaModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSfidaModal() {
+  document.getElementById('sfidaModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function sendSfida() {
+  if (!selectedPlayer) {
+    showToast('⚠️ Prima seleziona un giocatore dal LIVE!');
+    closeSfidaModal();
+    switchPage('live', document.querySelectorAll('.nav-btn')[1]);
+    return;
+  }
+  const friend = document.getElementById('sfida-friend').value.trim();
+  if (!friend) {
+    showToast('⚠️ Inserisci username o email amico!');
+    return;
+  }
+  closeSfidaModal();
+  showToast(`✓ Sfida inviata a ${friend}! 🎯`);
+  document.getElementById('sfida-friend').value = '';
+  document.getElementById('sfida-msg').value = '';
+}
+</script>
+</body>
+</html>

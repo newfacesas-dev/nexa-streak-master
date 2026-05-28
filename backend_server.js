@@ -17,8 +17,10 @@ function formatDate(d) { return d.toISOString().split('T')[0]; }
 
 function mapFixture(m) {
   return {
-    id: m.fixture.id, date: m.fixture.date,
-    status: m.fixture.status.short, minute: m.fixture.status.elapsed,
+    id: m.fixture.id,
+    date: m.fixture.date,
+    status: m.fixture.status.short,
+    minute: m.fixture.status.elapsed,
     venue: m.fixture.venue?.name,
     home: { id: m.teams.home.id, name: m.teams.home.name, logo: m.teams.home.logo, goals: m.goals.home },
     away: { id: m.teams.away.id, name: m.teams.away.name, logo: m.teams.away.logo, goals: m.goals.away },
@@ -27,30 +29,30 @@ function mapFixture(m) {
   };
 }
 
-// LIVE
+// ═══ LIVE ═══
 app.get('/api/matches/live', async (req, res) => {
   try {
     const c = gc('live'); if (c) return res.json(c);
     const r = await axios.get(`${BASE}/fixtures`, { params: { live: 'all' }, headers: H });
     const data = (r.data.response||[]).map(mapFixture);
     sc('live', data);
+    console.log('✅ Live:', data.length);
     res.json(data);
   } catch(e) { res.json([]); }
 });
 
-// OGGI
+// ═══ OGGI ═══
 app.get('/api/matches/today', async (req, res) => {
   try {
     const c = gc('today'); if (c) return res.json(c);
-    const today = formatDate(new Date());
-    const r = await axios.get(`${BASE}/fixtures`, { params: { date: today, status: 'NS' }, headers: H });
+    const r = await axios.get(`${BASE}/fixtures`, { params: { date: formatDate(new Date()), status: 'NS' }, headers: H });
     const data = (r.data.response||[]).map(mapFixture);
     sc('today', data);
     res.json(data);
   } catch(e) { res.json([]); }
 });
 
-// DOMANI
+// ═══ DOMANI ═══
 app.get('/api/matches/tomorrow', async (req, res) => {
   try {
     const c = gc('tomorrow'); if (c) return res.json(c);
@@ -62,7 +64,7 @@ app.get('/api/matches/tomorrow', async (req, res) => {
   } catch(e) { res.json([]); }
 });
 
-// GIOCATORI SQUADRA
+// ═══ GIOCATORI SQUADRA ═══
 app.get('/api/team/:id/players', async (req, res) => {
   const { id } = req.params;
   const season = req.query.season || '2025';
@@ -99,65 +101,133 @@ app.get('/api/team/:id/players', async (req, res) => {
   } catch(e) { res.json([]); }
 });
 
-// STORICO GOL GIOCATORE (ultimi 5 match)
+// ═══ STORICO GOL GIOCATORE ═══
 app.get('/api/player/:id/history', async (req, res) => {
   const { id } = req.params;
   const season = req.query.season || '2025';
   try {
     const key = `hist_${id}_${season}`;
     const c = gc(key); if (c) return res.json(c);
-    
-    console.log(`🔄 Goal history for player ${id}`);
     const r = await axios.get(`${BASE}/fixtures`, {
-      params: { player: id, season: season, last: 5 },
+      params: { player: id, season, last: 5 },
       headers: H
     });
-
     const history = (r.data.response||[]).map(m => {
-      const playerGoals = (m.events||[]).filter(e => 
-        e.type === 'Goal' && e.player?.id == id
-      ).length;
-      const playerAssists = (m.events||[]).filter(e => 
-        e.type === 'Goal' && e.assist?.id == id
-      ).length;
-      
+      const playerGoals = (m.events||[]).filter(e => e.type==='Goal' && e.player?.id==id).length;
       const isHome = m.teams.home.id == id;
-      const myTeam = isHome ? m.teams.home.name : m.teams.away.name;
-      const oppTeam = isHome ? m.teams.away.name : m.teams.home.name;
       const myGoals = isHome ? m.goals.home : m.goals.away;
       const oppGoals = isHome ? m.goals.away : m.goals.home;
-      
       return {
         date: m.fixture.date,
-        league: m.league.name,
         home: m.teams.home.name,
         away: m.teams.away.name,
         score: `${m.goals.home}-${m.goals.away}`,
         goals: playerGoals,
-        assists: playerAssists,
         result: myGoals > oppGoals ? 'W' : myGoals < oppGoals ? 'L' : 'D'
       };
     });
-
     sc(key, history);
-    console.log(`✅ History for ${id}: ${history.length} matches`);
     res.json(history);
+  } catch(e) { res.json([]); }
+});
+
+// ═══ VERIFICA PICK (chiave per il gioco!) ═══
+app.get('/api/verify-pick/:playerId', async (req, res) => {
+  const { playerId } = req.params;
+  const { fixtureId } = req.query;
+  
+  try {
+    console.log(`🔍 Verifica pick: player ${playerId}, fixture ${fixtureId}`);
+    
+    // Se abbiamo fixture ID specifico
+    if (fixtureId) {
+      const r = await axios.get(`${BASE}/fixtures`, {
+        params: { id: fixtureId },
+        headers: H
+      });
+      const fixture = r.data.response?.[0];
+      if (!fixture) return res.json({ status: 'not_found' });
+      
+      const fixtureStatus = fixture.fixture.status.short;
+      const isFinished = ['FT','AET','PEN'].includes(fixtureStatus);
+      const isLive = ['1H','2H','HT','ET'].includes(fixtureStatus);
+      
+      const playerGoals = (fixture.events||[]).filter(e => 
+        e.type === 'Goal' && e.player?.id == playerId
+      ).length;
+      
+      return res.json({
+        status: isFinished ? 'finished' : isLive ? 'live' : 'pending',
+        fixtureStatus,
+        playerGoals,
+        scored: playerGoals > 0,
+        home: fixture.teams.home.name,
+        away: fixture.teams.away.name,
+        score: `${fixture.goals.home}-${fixture.goals.away}`,
+        minute: fixture.fixture.status.elapsed
+      });
+    }
+    
+    // Cerca nelle partite di oggi finite
+    const today = formatDate(new Date());
+    const r = await axios.get(`${BASE}/fixtures`, {
+      params: { date: today, status: 'FT' },
+      headers: H
+    });
+    
+    let result = { status: 'not_played', playerGoals: 0, scored: false };
+    
+    for (const match of r.data.response||[]) {
+      const goals = (match.events||[]).filter(e => 
+        e.type === 'Goal' && e.player?.id == playerId
+      );
+      if (goals.length > 0) {
+        result = {
+          status: 'finished',
+          playerGoals: goals.length,
+          scored: true,
+          home: match.teams.home.name,
+          away: match.teams.away.name,
+          score: `${match.goals.home}-${match.goals.away}`,
+          fixtureId: match.fixture.id
+        };
+        break;
+      }
+    }
+    
+    console.log(`✅ Verifica result:`, result);
+    res.json(result);
   } catch(e) {
-    console.error('❌ history:', e.message);
-    res.json([]);
+    console.error('❌ verify-pick:', e.message);
+    res.json({ status: 'error', error: e.message });
   }
+});
+
+// ═══ PARTITE FINITE OGGI ═══
+app.get('/api/matches/finished', async (req, res) => {
+  try {
+    const today = formatDate(new Date());
+    const r = await axios.get(`${BASE}/fixtures`, {
+      params: { date: today, status: 'FT' },
+      headers: H
+    });
+    const data = (r.data.response||[]).map(mapFixture);
+    res.json(data);
+  } catch(e) { res.json([]); }
 });
 
 app.listen(3000, () => {
   console.log(`
 ╔════════════════════════════════════════╗
-║   NEXA STREAK MASTER — BACKEND v3     ║
+║   NEXA STREAK MASTER — BACKEND v4     ║
 ║   Port 3000                            ║
 ║   ✅ /api/matches/live                ║
 ║   ✅ /api/matches/today               ║
 ║   ✅ /api/matches/tomorrow            ║
+║   ✅ /api/matches/finished            ║
 ║   ✅ /api/team/:id/players            ║
-║   ✅ /api/player/:id/history  NEW!    ║
+║   ✅ /api/player/:id/history          ║
+║   ✅ /api/verify-pick/:playerId NEW!  ║
 ╚════════════════════════════════════════╝
   `);
 });

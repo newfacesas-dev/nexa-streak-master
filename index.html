@@ -426,6 +426,11 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
         <div class="prof-email" id="prof-email">—</div>
         <div class="prof-level" id="prof-level">⭐ Livello 1</div>
       </div>
+
+      <!-- LIVELLO E PROGRESSIONE -->
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;" id="prof-level-section">
+        <div style="color:var(--muted);font-size:12px;">Caricamento livello...</div>
+      </div>
       <div class="prof-stats">
         <div class="ps-box"><div class="ps-val" id="prof-streak" style="color:var(--gold);">🔥 0</div><div class="ps-lbl">Streak attuale</div></div>
         <div class="ps-box"><div class="ps-val" id="prof-pts" style="color:var(--purple2);">0</div><div class="ps-lbl">Punti totali</div></div>
@@ -598,11 +603,12 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
     <div style="margin-bottom:12px;">
       <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">🎯 TIPO DI PICK</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;" id="pick-type-grid">
-        <button class="pick-type-btn active" data-type="goal" onclick="setPickType('goal',this)">⚽ GOL<br><span style="font-size:9px;color:var(--muted);">+15 punti</span></button>
-        <button class="pick-type-btn" data-type="assist" onclick="setPickType('assist',this)">🎯 ASSIST<br><span style="font-size:9px;color:var(--muted);">+12 punti</span></button>
-        <button class="pick-type-btn" data-type="double" onclick="setPickType('double',this)">⚽⚽ DOPPIETTA<br><span style="font-size:9px;color:var(--muted);">+35 punti</span></button>
-        <button class="pick-type-btn" data-type="triple" onclick="setPickType('triple',this)">⚽⚽⚽ TRIPLETTA<br><span style="font-size:9px;color:var(--muted);">+75 punti</span></button>
+        <button class="pick-type-btn active" data-type="goal" onclick="handlePickType('goal',this)">⚽ GOL<br><span style="font-size:9px;color:var(--muted);">+15 · Sempre</span></button>
+        <button class="pick-type-btn" data-type="assist" id="btn-assist" onclick="handlePickType('assist',this)">🎯 ASSIST<br><span style="font-size:9px;" id="assist-lbl">+12 · LVL 2</span></button>
+        <button class="pick-type-btn" data-type="double" id="btn-double" onclick="handlePickType('double',this)">⚽⚽ DOPPIETTA<br><span style="font-size:9px;" id="double-lbl">+35 · LVL 3</span></button>
+        <button class="pick-type-btn" data-type="triple" id="btn-triple" onclick="handlePickType('triple',this)">⚽⚽⚽ TRIPLETTA<br><span style="font-size:9px;" id="triple-lbl">+75 · LVL 7</span></button>
       </div>
+      <div id="pick-slots-info" style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center;"></div>
     </div>
 
     <button class="btn-sel" id="m-selbtn" onclick="confirmSel()">✓ SELEZIONA GIOCATORE</button>
@@ -722,8 +728,28 @@ function updateUI() {
   document.getElementById('prof-pts').textContent = pts;
   document.getElementById('prof-wr').textContent = `${wr}%`;
   document.getElementById('prof-picks').textContent = userData.totalPicks || 0;
-  const level = Math.floor((userData.points||0) / 100) + 1;
-  document.getElementById('prof-level').textContent = `⭐ Livello ${level} · ${pts} punti`;
+  const level = getLevel(pts);
+  const levelName = getLevelName(level);
+  const maxPicks = getMaxPicks(level);
+  const progress = getLevelProgress(pts);
+  document.getElementById('prof-level').textContent = `⭐ Livello ${level} · ${levelName}`;
+  
+  // Aggiorna sezione livello nel profilo
+  const levelEl = document.getElementById('prof-level-section');
+  if (levelEl) {
+    levelEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--lime);">LVL ${level} · ${levelName}</span>
+        <span style="font-size:12px;color:var(--gold);font-weight:700;">${maxPicks} pick/giorno</span>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin-bottom:6px;">
+        <div style="height:100%;width:${progress.pct}%;background:linear-gradient(90deg,var(--purple),var(--lime));border-radius:4px;transition:width 0.5s;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);">${pts} / ${progress.next} punti · Prossimo livello</div>
+      ${getUnlockedFeatures(level).map(f=>`<div style="font-size:11px;color:var(--lime);margin-top:4px;">✓ ${f}</div>`).join('')}
+      ${level < 5 ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;">🔒 2 picks/giorno si sblocca al livello 5</div>` : ''}
+    `;
+  }
   // avatar
   if (userData.photoURL) {
     document.getElementById('tb-avatar').innerHTML = `<img src="${userData.photoURL}">`;
@@ -731,6 +757,7 @@ function updateUI() {
   }
   // pick giornaliero
   checkTodayPick();
+  updatePickButtons();
 }
 
 function checkTodayPick() {
@@ -1102,6 +1129,7 @@ window.openModal = (player, matchName) => {
   else{btn.textContent='✓ SELEZIONA GIOCATORE';btn.className='btn-sel';}
   document.getElementById('playerModal').classList.add('open');
   document.body.classList.add('modal-open');
+  updatePickButtons();
 };
 
 window.closeModal = () => {
@@ -1259,10 +1287,98 @@ window.showToast = (msg) => {
   setTimeout(()=>t.classList.remove('show'),2500);
 };
 
-// PICK TYPE
-let currentPickType = 'goal';
+// PICK TYPE con controllo livello
+const PICK_LEVEL_REQ = { goal: 1, assist: 2, double: 3, triple: 7 };
+
+window.handlePickType = (type, btn) => {
+  const level = getLevel(userData?.points || 0);
+  const req = PICK_LEVEL_REQ[type] || 1;
+  if (level < req) {
+    showToast(`🔒 Sblocca al livello ${req}! Ora sei LVL ${level}`);
+    return;
+  }
+  setPickType(type, btn);
+};
+
+// Aggiorna stato bottoni pick in base al livello
+function updatePickButtons() {
+  const level = getLevel(userData?.points || 0);
+  const maxPicks = getMaxPicks(level);
+  const picks = userData?.todayPicks || 0;
+
+  Object.entries(PICK_LEVEL_REQ).forEach(([type, req]) => {
+    const btn = document.getElementById(`btn-${type}`);
+    const lbl = document.getElementById(`${type}-lbl`);
+    if (!btn) return;
+    if (level < req) {
+      btn.style.opacity = '0.4';
+      btn.style.filter = 'grayscale(1)';
+      if (lbl) { lbl.textContent = `🔒 LVL ${req}`; lbl.style.color = 'var(--red)'; }
+    } else {
+      btn.style.opacity = '1';
+      btn.style.filter = 'none';
+      if (lbl) { lbl.textContent = `+${PICK_POINTS[type]} pts ✓`; lbl.style.color = 'var(--lime)'; }
+    }
+  });
+
+  const slotsEl = document.getElementById('pick-slots-info');
+  if (slotsEl) {
+    const used = Array.isArray(userData?.todayPicks) ? userData.todayPicks.length : (userData?.lastPickDate === new Date().toDateString() ? 1 : 0);
+    slotsEl.innerHTML = `🎮 Picks oggi: <strong style="color:var(--lime);">${used}/${maxPicks}</strong> · LVL ${level} ${getLevelName(level)}`;
+  }
+}
 const PICK_POINTS = { goal: 15, assist: 12, double: 35, triple: 75, goal_assist: 25 };
 const PICK_LABELS = { goal: '⚽ Gol', assist: '🎯 Assist', double: '⚽⚽ Doppietta', triple: '⚽⚽⚽ Tripletta' };
+
+// ═══ SISTEMA LIVELLI ═══
+function getLevel(points) {
+  if (points < 100) return 1;
+  if (points < 250) return 2;
+  if (points < 500) return 3;
+  if (points < 1000) return 4;
+  if (points < 2000) return 5;
+  if (points < 3500) return 6;
+  if (points < 5000) return 7;
+  if (points < 7500) return 8;
+  if (points < 10000) return 9;
+  if (points < 15000) return 10;
+  if (points < 20000) return 15;
+  return 20;
+}
+
+function getMaxPicks(level) {
+  if (level >= 20) return 4;
+  if (level >= 10) return 3;
+  if (level >= 5) return 2;
+  return 1;
+}
+
+function getLevelName(level) {
+  const names = {1:'Rookie',2:'Dilettante',3:'Amatore',4:'Semi-Pro',5:'Pro',
+    6:'Expert',7:'Master',8:'Elite',9:'Legend',10:'Champion',15:'Grand Master',20:'GOAT'};
+  return names[level] || 'Pro';
+}
+
+function getLevelProgress(points) {
+  const thresholds = [0,100,250,500,1000,2000,3500,5000,7500,10000,15000,20000];
+  const level = getLevel(points);
+  const idx = Math.min(level, thresholds.length - 2);
+  const current = thresholds[idx];
+  const next = thresholds[idx + 1] || thresholds[idx] * 1.5;
+  const pct = Math.min(((points - current) / (next - current)) * 100, 100);
+  return { pct: Math.round(pct), next, current };
+}
+
+function getUnlockedFeatures(level) {
+  const features = [];
+  if (level >= 2) features.push('🎯 Assist pick sbloccato');
+  if (level >= 3) features.push('⚽⚽ Doppietta pick sbloccata');
+  if (level >= 5) features.push('🎮 2 picks al giorno');
+  if (level >= 7) features.push('⚽⚽⚽ Tripletta pick sbloccata');
+  if (level >= 10) features.push('🎮 3 picks al giorno');
+  if (level >= 20) features.push('🎮 4 picks al giorno');
+  return features;
+}
 
 window.setPickType = (type, btn) => {
   currentPickType = type;

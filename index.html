@@ -257,6 +257,9 @@ body.modal-open { overflow:hidden; }
 .pick-type-btn { padding:10px 8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;text-align:center;transition:all 0.2s;line-height:1.4; }
 .pick-type-btn.active { background:var(--purple-dim);border-color:var(--purple);color:var(--lime); }
 .pick-type-btn:hover { border-color:var(--purple); }
+.legal-section { background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px; }
+.legal-title { font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--lime);letter-spacing:1px;margin-bottom:6px; }
+.legal-body { font-size:12px;color:var(--muted);line-height:1.7; }
 .btn-desel { background:rgba(255,77,77,0.15)!important;color:var(--red)!important;border:1px solid rgba(255,77,77,0.3)!important;box-shadow:none!important; }
 .btn-dis { background:rgba(255,255,255,0.05)!important;color:var(--muted)!important;border:1px solid var(--border)!important;cursor:not-allowed!important;box-shadow:none!important;transform:none!important; }
 
@@ -501,8 +504,54 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
 
       <div style="font-size:10px;color:rgba(255,255,255,0.2);text-align:center;line-height:1.7;">
         18+ · Quote indicative · Non sono offerte di scommessa · Gioca responsabilmente<br>
-        <span style="text-decoration:underline;cursor:pointer;">Privacy Policy</span> · <span style="text-decoration:underline;cursor:pointer;">Termini di Servizio</span>
+        <span style="text-decoration:underline;cursor:pointer;" onclick="switchPage('privacy',null)">Privacy Policy</span> · <span style="text-decoration:underline;cursor:pointer;" onclick="switchPage('terms',null)">Termini di Servizio</span>
       </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY POLICY -->
+  <div id="privacy" class="page">
+    <div class="topbar">
+      <button onclick="switchPage('profilo',null)" style="background:none;border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">← TORNA</button>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;color:var(--lime);">PRIVACY POLICY</div>
+      <div style="width:80px;"></div>
+    </div>
+    <div style="max-width:480px;margin:0 auto;padding:24px 16px 40px;">
+      <div style="font-size:22px;font-weight:900;color:var(--lime);letter-spacing:2px;margin-bottom:4px;">PRIVACY POLICY</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:24px;">Ultimo aggiornamento: 28 maggio 2026</div>
+      <div style="background:var(--purple-dim);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;">🔒 NEXA Streak Master è un gioco di abilità. Non raccogliamo dati sensibili e non vendiamo dati a terzi.</div>
+      <div class="legal-section"><div class="legal-title">1. TITOLARE</div><div class="legal-body">NEXA Arena / Newfacesas Dev · privacy@nexaarena.com</div></div>
+      <div class="legal-section"><div class="legal-title">2. DATI RACCOLTI</div><div class="legal-body">• Email e username (registrazione)<br>• Picks, streak, punti (gioco)<br>• Dati tecnici anonimi<br><br>❌ NON raccogliamo: carte di credito, documenti, GPS.</div></div>
+      <div class="legal-section"><div class="legal-title">3. COME LI USIAMO</div><div class="legal-body">• Gestire il tuo account<br>• Salvare i progressi di gioco<br>• Mostrare la classifica<br>• Migliorare l'app</div></div>
+      <div class="legal-section"><div class="legal-title">4. SERVIZI TERZI</div><div class="legal-body">• Firebase (Google): autenticazione e database<br>• API-Football: dati partite<br>• Netlify/Railway: hosting<br>• Google Analytics: analytics anonimi</div></div>
+      <div class="legal-section"><div class="legal-title">5. I TUOI DIRITTI (GDPR)</div><div class="legal-body">✅ Accesso · ✅ Rettifica · ✅ Cancellazione · ✅ Portabilità<br>Contatta: privacy@nexaarena.com</div></div>
+      <div class="legal-section"><div class="legal-title">6. SICUREZZA</div><div class="legal-body">• Comunicazioni HTTPS/TLS<br>• Password gestite da Firebase Auth<br>• Nessun dato sensibile sul dispositivo</div></div>
+      <div class="legal-section"><div class="legal-title">7. MINORI</div><div class="legal-body">Minimo 13 anni. Under 18 richiede consenso genitoriale.</div></div>
+      <div class="legal-section" style="border-color:rgba(255,165,0,0.3);background:rgba(255,165,0,0.05);"><div class="legal-title" style="color:var(--gold);">8. QUOTE - DISCLAIMER</div><div class="legal-body">⚠️ Le quote sono PURAMENTE INDICATIVE. Non sono offerte di scommessa. NEXA non è un bookmaker. 18+. Gioca responsabilmente.</div></div>
+      <div style="text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,0.2);">© 2026 NEXA Arena · Conforme GDPR</div>
+    </div>
+  </div>
+
+  <!-- TERMINI DI SERVIZIO -->
+  <div id="terms" class="page">
+    <div class="topbar">
+      <button onclick="switchPage('profilo',null)" style="background:none;border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">← TORNA</button>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;color:var(--lime);">TERMINI DI SERVIZIO</div>
+      <div style="width:80px;"></div>
+    </div>
+    <div style="max-width:480px;margin:0 auto;padding:24px 16px 40px;">
+      <div style="font-size:22px;font-weight:900;color:var(--lime);letter-spacing:2px;margin-bottom:4px;">TERMINI DI SERVIZIO</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:24px;">Ultimo aggiornamento: 28 maggio 2026</div>
+      <div class="legal-section"><div class="legal-title">1. IL SERVIZIO</div><div class="legal-body">NEXA Streak Master è un gioco di abilità calcistica con punti virtuali senza valore monetario reale. NON è gioco d'azzardo.</div></div>
+      <div class="legal-section"><div class="legal-title">2. ETÀ MINIMA</div><div class="legal-body">Minimo 13 anni. Consigliato 18+ per sezioni con quote indicative.</div></div>
+      <div class="legal-section"><div class="legal-title">3. ACCOUNT</div><div class="legal-body">• Sei responsabile della sicurezza del tuo account<br>• Un solo account per persona<br>• Vietati bot e strumenti automatici</div></div>
+      <div class="legal-section"><div class="legal-title">4. REGOLE DI GIOCO</div><div class="legal-body">• 1 pick/giorno (piano Free)<br>• Il pick va fatto prima della partita<br>• Risultati verificati da API-Football<br>• Streak si azzera a mezzanotte se non si gioca</div></div>
+      <div class="legal-section"><div class="legal-title">5. VIETATO</div><div class="legal-body">• Bot e script automatici<br>• Account multipli<br>• Manipolazione punteggi<br>• Molestie ad altri utenti</div></div>
+      <div class="legal-section"><div class="legal-title">6. PIANI PREMIUM</div><div class="legal-body">• Pagamenti via Stripe<br>• Cancellazione in qualsiasi momento<br>• Nessun rimborso per periodi già pagati</div></div>
+      <div class="legal-section" style="border-color:rgba(255,77,77,0.3);background:rgba(255,77,77,0.05);"><div class="legal-title" style="color:var(--red);">7. DISCLAIMER LEGALE QUOTE</div><div class="legal-body">⚠️ Le quote sono generate algoritmicamente a scopo informativo. Non sono offerte di scommessa. NEXA Arena non è un bookmaker. 18+. Il gioco può causare dipendenza. Aiuto: 800 721 721</div></div>
+      <div class="legal-section"><div class="legal-title">8. LEGGE APPLICABILE</div><div class="legal-body">Legge italiana. Foro competente: Milano.</div></div>
+      <div class="legal-section"><div class="legal-title">9. CONTATTI</div><div class="legal-body">legal@nexaarena.com</div></div>
+      <div style="text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,0.2);">© 2026 NEXA Arena · Tutti i diritti riservati</div>
     </div>
   </div>
 

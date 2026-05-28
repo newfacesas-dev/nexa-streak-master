@@ -1286,7 +1286,7 @@ window.clearSel = async () => {
     await updateDoc(ref,{lastPickPlayer:null,lastPickDate:null});
     userData.lastPickPlayer=null; userData.lastPickDate=null;
   }
-  updateBanner();showToast('🔄 Pick annullato');reRender();
+  if(userData?.plan!=="premium"&&userData?.plan!=="pro"){showToast("🔒 Solo Premium può cambiare! 👑");return;}updateBanner();showToast("🔄 Pick cambiato!");reRender();
   document.getElementById('pick-done-wrap').innerHTML='';
 };
 

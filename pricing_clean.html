@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXA Streak Master — Premium</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b1a;
+  --card: #161a45;
+  --card2: #1e2255;
+  --purple: #6c3de8;
+  --purple2: #7c4df8;
+  --purple-dim: rgba(108,61,232,0.15);
+  --lime: #39ff14;
+  --lime-dim: rgba(57,255,20,0.12);
+  --gold: #f5a623;
+  --gold-dim: rgba(245,166,35,0.15);
+  --red: #ff4d4d;
+  --text: #ffffff;
+  --muted: #6b7db3;
+  --border: rgba(108,61,232,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; padding-bottom:40px; }
+
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:rgba(8,11,26,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; }
+.tb-back { background:none; border:1px solid var(--border); color:var(--text); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; letter-spacing:1px; }
+.tb-logo { font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; letter-spacing:2px; }
+.tb-logo span { color:var(--lime); }
+
+.hero { text-align:center; padding:40px 20px 30px; max-width:600px; margin:0 auto; }
+.hero-crown { font-size:52px; margin-bottom:16px; }
+.hero-title { font-family:'Rajdhani',sans-serif; font-size:36px; font-weight:700; letter-spacing:3px; color:var(--gold); margin-bottom:8px; }
+.hero-sub { font-size:14px; color:var(--muted); line-height:1.7; max-width:400px; margin:0 auto; }
+
+/* TOGGLE */
+.billing-toggle { display:flex; align-items:center; justify-content:center; gap:12px; margin:24px 0; }
+.bt-label { font-size:13px; font-weight:700; color:var(--muted); }
+.bt-label.active { color:var(--text); }
+.toggle-wrap { width:48px; height:26px; background:var(--purple); border-radius:13px; cursor:pointer; position:relative; transition:all 0.2s; }
+.toggle-ball { width:20px; height:20px; background:white; border-radius:50%; position:absolute; top:3px; left:3px; transition:all 0.2s; }
+.toggle-wrap.annual .toggle-ball { left:25px; }
+.badge-save { background:var(--lime-dim); border:1px solid rgba(57,255,20,0.3); color:var(--lime); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+
+/* PLANS */
+.plans { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; max-width:900px; margin:0 auto 40px; padding:0 20px; }
+@media(max-width:768px){ .plans { grid-template-columns:1fr; max-width:400px; } }
+
+.plan-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; position:relative; transition:all 0.2s; }
+.plan-card:hover { transform:translateY(-3px); border-color:rgba(108,61,232,0.5); }
+.plan-card.popular { border-color:var(--lime); background:linear-gradient(135deg,rgba(57,255,20,0.08),var(--card)); box-shadow:0 0 30px rgba(57,255,20,0.1); }
+.plan-card.popular:hover { box-shadow:0 0 40px rgba(57,255,20,0.2); }
+
+.popular-badge { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--lime); color:var(--bg); padding:4px 16px; border-radius:20px; font-size:11px; font-weight:900; letter-spacing:2px; white-space:nowrap; }
+
+.plan-icon { font-size:32px; margin-bottom:12px; }
+.plan-name { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; letter-spacing:2px; margin-bottom:4px; }
+.plan-price { display:flex; align-items:baseline; gap:4px; margin-bottom:4px; }
+.plan-amount { font-family:'Rajdhani',sans-serif; font-size:44px; font-weight:700; line-height:1; }
+.plan-currency { font-size:18px; color:var(--muted); margin-top:4px; }
+.plan-period { font-size:13px; color:var(--muted); }
+.plan-annual-note { font-size:11px; color:var(--lime); margin-bottom:16px; font-weight:700; min-height:16px; }
+
+.plan-features { list-style:none; margin-bottom:24px; }
+.plan-features li { display:flex; align-items:flex-start; gap:8px; font-size:13px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.plan-features li:last-child { border-bottom:none; }
+.feat-icon { flex-shrink:0; margin-top:1px; }
+.feat-yes { color:var(--lime); }
+.feat-no { color:var(--muted); }
+.feat-text { color:var(--text); }
+.feat-text.muted { color:var(--muted); text-decoration:line-through; }
+
+.btn-plan { width:100%; padding:14px; border:none; font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; letter-spacing:2px; border-radius:10px; cursor:pointer; transition:all 0.2s; }
+.btn-free { background:rgba(255,255,255,0.06); color:var(--text); border:1px solid var(--border); }
+.btn-free:hover { background:rgba(255,255,255,0.1); }
+.btn-premium { background:linear-gradient(135deg,var(--purple),var(--purple2)); color:var(--text); box-shadow:0 4px 20px rgba(108,61,232,0.4); }
+.btn-premium:hover { transform:translateY(-1px); box-shadow:0 6px 25px rgba(108,61,232,0.5); }
+.btn-pro { background:linear-gradient(135deg,#f5a623,#fbbf24); color:var(--bg); box-shadow:0 4px 20px rgba(245,166,35,0.4); }
+.btn-pro:hover { transform:translateY(-1px); }
+
+/* COMPARISON */
+.comparison { max-width:700px; margin:0 auto 40px; padding:0 20px; }
+.comp-title { font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; letter-spacing:2px; text-align:center; margin-bottom:20px; color:var(--lime); }
+.comp-table { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.comp-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05); align-items:center; }
+.comp-row:last-child { border-bottom:none; }
+.comp-header { background:var(--card2); font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700; letter-spacing:1px; }
+.comp-header .ch-plan { text-align:center; }
+.ch-free { color:var(--muted); }
+.ch-prem { color:var(--lime); }
+.ch-pro { color:var(--gold); }
+.comp-feat { font-size:13px; color:var(--text); }
+.comp-val { text-align:center; font-size:16px; }
+
+/* FAQ */
+.faq { max-width:600px; margin:0 auto 40px; padding:0 20px; }
+.faq-title { font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; letter-spacing:2px; text-align:center; margin-bottom:20px; }
+.faq-item { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:8px; cursor:pointer; }
+.faq-q { font-weight:700; font-size:13px; display:flex; justify-content:space-between; align-items:center; }
+.faq-a { font-size:12px; color:var(--muted); margin-top:10px; line-height:1.6; display:none; }
+.faq-item.open .faq-a { display:block; }
+.faq-item.open .faq-arrow { transform:rotate(180deg); }
+.faq-arrow { transition:transform 0.2s; }
+
+/* ADS NOTE */
+.ads-note { max-width:600px; margin:0 auto 40px; padding:0 20px; text-align:center; }
+.ads-card { background:var(--card); border:1px solid rgba(245,166,35,0.2); border-radius:14px; padding:24px; }
+.ads-title { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; letter-spacing:2px; color:var(--gold); margin-bottom:12px; }
+.ads-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+.ads-box { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:left; }
+.ads-box-icon { font-size:24px; margin-bottom:6px; }
+.ads-box-title { font-size:12px; font-weight:700; color:var(--text); margin-bottom:3px; }
+.ads-box-sub { font-size:11px; color:var(--muted); line-height:1.5; }
+
+/* COMPLIANCE */
+.compliance { max-width:600px; margin:0 auto; padding:0 20px 20px; }
+.compliance-text { font-size:11px; color:rgba(255,255,255,0.2); text-align:center; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()">← TORNA</button>
+  <div class="tb-logo">NEXA <span>PREMIUM</span></div>
+  <div style="width:80px;"></div>
+</div>
+
+<div class="hero">
+  <div class="hero-crown">👑</div>
+  <div class="hero-title">SCEGLI IL TUO PIANO</div>
+  <div class="hero-sub">Sblocca statistiche avanzate, picks illimitati e sfide esclusive. Inizia gratis, upgradia quando vuoi.</div>
+</div>
+
+<div class="billing-toggle">
+  <span class="bt-label active" id="monthly-lbl">MENSILE</span>
+  <div class="toggle-wrap" id="billing-toggle" onclick="toggleBilling()">
+    <div class="toggle-ball"></div>
+  </div>
+  <span class="bt-label" id="annual-lbl">ANNUALE</span>
+  <span class="badge-save">RISPARMIA 40%</span>
+</div>
+
+<div class="plans">
+
+  <!-- FREE -->
+  <div class="plan-card">
+    <div class="plan-icon">🎮</div>
+    <div class="plan-name">FREE</div>
+    <div class="plan-price">
+      <span class="plan-currency">€</span>
+      <span class="plan-amount">0</span>
+    </div>
+    <div class="plan-period">per sempre</div>
+    <div class="plan-annual-note"></div>
+    <ul class="plan-features">
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">1 pick al giorno</span></li>
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">Partite LIVE</span></li>
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">Classifica globale</span></li>
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">3 sfide al mese</span></li>
+      <li><span class="feat-icon feat-no">✗</span><span class="feat-text muted">Statistiche avanzate</span></li>
+      <li><span class="feat-icon feat-no">✗</span><span class="feat-text muted">Storico completo</span></li>
+      <li><span class="feat-icon feat-no">✗</span><span class="feat-text muted">Notifiche gol</span></li>
+      <li><span class="feat-icon feat-no">✗</span><span class="feat-text muted">Streak Shield</span></li>
+    </ul>
+    <button class="btn-plan btn-free">PIANO ATTUALE</button>
+  </div>
+
+  <!-- PREMIUM -->
+  <div class="plan-card popular">
+    <div class="popular-badge">⚡ PIÙ POPOLARE</div>
+    <div class="plan-icon">🔥</div>
+    <div class="plan-name" style="color:var(--lime);">PREMIUM</div>
+    <div class="plan-price">
+      <span class="plan-currency" style="color:var(--lime);">€</span>
+      <span class="plan-amount" id="prem-price" style="color:var(--lime);">4.99</span>
+    </div>
+    <div class="plan-period" id="prem-period">al mese</div>
+    <div class="plan-annual-note" id="prem-note"></div>
+    <ul class="plan-features">
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">Picks illimitati</span></li>
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">Partite LIVE</span></li>
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">Classifica globale</span></li>
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">Sfide illimitate</span></li>
+      <li><span class="feat-icon feat-yes" style="color:var(--lime);">✓</span><span class="feat-text">Statistiche avanzate</span></li>
+      <li><span class="feat-icon feat-yes" style="color:var(--lime);">✓</span><span class="feat-text">Storico 20 partite</span></li>
+      <li><span class="feat-icon feat-yes" style="color:var(--lime);">✓</span><span class="feat-text">Notifiche gol push</span></li>
+      <li><span class="feat-icon feat-no">✗</span><span class="feat-text muted">Streak Shield</span></li>
+    </ul>
+    <button class="btn-plan btn-premium" onclick="showToast('Coming soon! 🚀')">INIZIA ORA</button>
+  </div>
+
+  <!-- PRO -->
+  <div class="plan-card">
+    <div class="plan-icon">👑</div>
+    <div class="plan-name" style="color:var(--gold);">PRO</div>
+    <div class="plan-price">
+      <span class="plan-currency" style="color:var(--gold);">€</span>
+      <span class="plan-amount" id="pro-price" style="color:var(--gold);">9.99</span>
+    </div>
+    <div class="plan-period" id="pro-period">al mese</div>
+    <div class="plan-annual-note" id="pro-note"></div>
+    <ul class="plan-features">
+      <li><span class="feat-icon feat-yes">✓</span><span class="feat-text">Tutto di Premium</span></li>
+      <li><span class="feat-icon" style="color:var(--gold);">✓</span><span class="feat-text">Streak Shield (1/mese)</span></li>
+      <li><span class="feat-icon" style="color:var(--gold);">✓</span><span class="feat-text">Analisi AI giocatori</span></li>
+      <li><span class="feat-icon" style="color:var(--gold);">✓</span><span class="feat-text">Torneo mensile esclusivo</span></li>
+      <li><span class="feat-icon" style="color:var(--gold);">✓</span><span class="feat-text">Badge PRO esclusivi</span></li>
+      <li><span class="feat-icon" style="color:var(--gold);">✓</span><span class="feat-text">Storico illimitato</span></li>
+      <li><span class="feat-icon" style="color:var(--gold);">✓</span><span class="feat-text">Supporto prioritario</span></li>
+      <li><span class="feat-icon" style="color:var(--gold);">✓</span><span class="feat-text">Early access novità</span></li>
+    </ul>
+    <button class="btn-plan btn-pro" onclick="showToast('Coming soon! 👑')">DIVENTA PRO</button>
+  </div>
+
+</div>
+
+<!-- COME GUADAGNIAMO -->
+<div class="ads-note">
+  <div class="ads-card">
+    <div class="ads-title">💰 COME FUNZIONA NEXA</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.7;">L'app è gratuita. Ci sosteniamo con pubblicità non invasiva e piani premium opzionali. Mai gioco d'azzardo, mai soldi reali.</div>
+    <div class="ads-grid">
+      <div class="ads-box">
+        <div class="ads-box-icon">📺</div>
+        <div class="ads-box-title">Rewarded Ads</div>
+        <div class="ads-box-sub">Guarda un video (opzionale) per sbloccare statistiche extra</div>
+      </div>
+      <div class="ads-box">
+        <div class="ads-box-icon">🔗</div>
+        <div class="ads-box-title">Quote Informative</div>
+        <div class="ads-box-sub">Quote indicative da bookmaker partner. 18+. Non sono offerte di scommessa.</div>
+      </div>
+      <div class="ads-box">
+        <div class="ads-box-icon">👑</div>
+        <div class="ads-box-title">Piano Premium</div>
+        <div class="ads-box-sub">Funzionalità avanzate opzionali. Nessun paywall su funzioni base.</div>
+      </div>
+      <div class="ads-box">
+        <div class="ads-box-icon">🏆</div>
+        <div class="ads-box-title">Solo Punti Virtuali</div>
+        <div class="ads-box-sub">Le sfide e la classifica usano solo punti virtuali. Compliance 100%.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <div class="faq-title">DOMANDE FREQUENTI</div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Posso cancellare in qualsiasi momento? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Sì! Puoi cancellare la tua iscrizione Premium o PRO in qualsiasi momento dal tuo profilo. Non ci sono vincoli o penali.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Cos'è lo Streak Shield? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Lo Streak Shield ti protegge da 1 errore al mese — se il tuo pick non segna, la tua streak non viene resettata. Disponibile solo nel piano PRO.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">È legale? Non è gioco d'azzardo? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Assolutamente legale! NEXA Streak Master usa solo punti virtuali senza valore monetario. Non è possibile vincere o perdere denaro reale. È un gioco di abilità e conoscenza calcistica.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Quando arrivano le notifiche gol? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Le notifiche push arrivano entro 1-2 minuti dal gol, grazie alla nostra integrazione con API-Football in tempo reale. Disponibili dal piano Premium.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Quali metodi di pagamento accettate? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Carta di credito/debito, PayPal, Apple Pay e Google Pay. Tutti i pagamenti sono gestiti in modo sicuro tramite Stripe.</div>
+  </div>
+</div>
+
+<div class="compliance">
+  <div class="compliance-text">
+    NEXA Streak Master è un gioco di abilità. Nessun denaro reale viene vinto o perso.<br>
+    Le quote mostrate sono puramente indicative e non costituiscono offerte di scommessa.<br>
+    18+ · Gioca responsabilmente · <a href="#" style="color:var(--muted);">Privacy Policy</a> · <a href="#" style="color:var(--muted);">Termini di Servizio</a>
+  </div>
+</div>
+
+<div class="toast" id="toast" style="position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--purple2);color:white;padding:10px 20px;border-radius:25px;font-size:13px;font-weight:700;z-index:2000;transition:transform 0.35s ease;white-space:nowrap;"></div>
+
+<script>
+let isAnnual = false;
+
+function toggleBilling() {
+  isAnnual = !isAnnual;
+  const toggle = document.getElementById('billing-toggle');
+  const mLbl = document.getElementById('monthly-lbl');
+  const aLbl = document.getElementById('annual-lbl');
+  toggle.classList.toggle('annual');
+  mLbl.classList.toggle('active');
+  aLbl.classList.toggle('active');
+  
+  if (isAnnual) {
+    document.getElementById('prem-price').textContent = '2.99';
+    document.getElementById('prem-period').textContent = 'al mese';
+    document.getElementById('prem-note').textContent = '€35.88/anno · Risparmi €24';
+    document.getElementById('pro-price').textContent = '5.99';
+    document.getElementById('pro-period').textContent = 'al mese';
+    document.getElementById('pro-note').textContent = '€71.88/anno · Risparmi €48';
+  } else {
+    document.getElementById('prem-price').textContent = '4.99';
+    document.getElementById('prem-period').textContent = 'al mese';
+    document.getElementById('prem-note').textContent = '';
+    document.getElementById('pro-price').textContent = '9.99';
+    document.getElementById('pro-period').textContent = 'al mese';
+    document.getElementById('pro-note').textContent = '';
+  }
+}
+
+function toggleFaq(el) {
+  el.classList.toggle('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => t.style.transform = 'translateX(-50%) translateY(-100px)', 2500);
+}
+</script>
+</body>
+</html>

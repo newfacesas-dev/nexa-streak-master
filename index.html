@@ -371,6 +371,16 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
       <div style="flex:1;">Pick: <strong id="sel-name">—</strong></div>
       <button class="sel-clear" onclick="clearSel()">✕ Cambia</button>
     </div>
+
+    <!-- ADS REWARDED BUTTONS -->
+    <div id="rewarded-btns" style="padding:0 16px 10px;max-width:480px;margin:0 auto;display:flex;gap:8px;">
+      <button onclick="watchAdForPick()" style="flex:1;padding:9px;background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);color:var(--gold);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">
+        📺 Pick Extra
+      </button>
+      <button onclick="watchAdForShield()" style="flex:1;padding:9px;background:rgba(108,61,232,0.1);border:1px solid var(--border);color:var(--purple2);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">
+        📺 Shield Gratis
+      </button>
+    </div>
     <div class="tabs-wrap" style="padding-top:12px;">
       <div class="tabs">
         <button class="tab-btn active" onclick="setTab('live',this)">🔴 LIVE</button>
@@ -447,6 +457,10 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
         <div class="badge-box"><div class="badge-em">🎯</div><div class="badge-lbl">Sniper</div><div class="badge-desc">5 attaccanti</div></div>
       </div>
       <button class="btn-primary" style="margin-top:12px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#080b1a;box-shadow:0 4px 20px rgba(245,166,35,0.4);" onclick="switchPage('pricing',null)">👑 DIVENTA PREMIUM</button>
+
+      <!-- NOTIFICHE -->
+      <button id="notif-btn" onclick="toggleNotifications()" style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;letter-spacing:1px;">🔕 Attiva Notifiche</button>
+
       <button class="btn-logout" onclick="logout()">⬅ ESCI</button>
     </div>
   </div>
@@ -958,6 +972,8 @@ function initApp() {
   loadTab('live');
   loadLeaderboard();
   loadSfide();
+  // Notifiche e ads inizializzati dopo login
+  setTimeout(() => { updateNotifButton(); }, 500);
 }
 
 async function loadLiveCount() {
@@ -1335,6 +1351,9 @@ window.switchPage = (id, btn) => {
   }
   if(id==='classifica')loadLeaderboard();
   if(id==='sfide')loadSfide();
+  if(id==='profilo')updateNotifButton();
+  // Interstitial discreto (solo tra pagine principali, non su live/home)
+  if(['sfide','classifica'].includes(id)) maybeShowInterstitial();
 };
 
 // ═══ TOAST ═══
@@ -1472,6 +1491,272 @@ window.togglePricing = () => {
     if(e.target===this){this.classList.remove('open');document.body.classList.remove('modal-open');}
   });
 });
+
+// ═══════════════════════════════════════
+// 🔔 NOTIFICHE PUSH (Firebase Cloud Messaging)
+// ═══════════════════════════════════════
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging.js";
+
+let messaging = null;
+
+async function initPushNotifications() {
+  try {
+    messaging = getMessaging(app);
+
+    // Ascolta notifiche in foreground
+    onMessage(messaging, (payload) => {
+      console.log('📬 Notifica ricevuta:', payload);
+      const title = payload.notification?.title || 'NEXA Streak Master';
+      const body = payload.notification?.body || '';
+      showToast(`🔔 ${body}`);
+
+      // Mostra notifica browser
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body,
+          icon: '/icon-192.png',
+          badge: '/icon-72.png',
+          tag: 'nexa-pick',
+        });
+      }
+    });
+  } catch(e) {
+    console.log('FCM non disponibile:', e.message);
+  }
+}
+
+async function requestNotificationPermission() {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await getToken(messaging, {
+        vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBWssQLXoRounK4oPluwlzFJXe4NlEsVx7EtI'
+      });
+      if (token && currentUser) {
+        const ref = doc(db, 'users', currentUser.uid);
+        await updateDoc(ref, { fcmToken: token, notificationsEnabled: true });
+        userData.fcmToken = token;
+        userData.notificationsEnabled = true;
+        showToast('🔔 Notifiche attivate! Riceverai un alert quando il tuo pick segna!');
+      }
+    } else {
+      showToast('❌ Notifiche non autorizzate');
+    }
+  } catch(e) {
+    console.error('Notifiche error:', e);
+    showToast('❌ Impossibile attivare le notifiche su questo browser');
+  }
+}
+
+window.toggleNotifications = async () => {
+  if (!userData?.notificationsEnabled) {
+    await requestNotificationPermission();
+  } else {
+    const ref = doc(db, 'users', currentUser.uid);
+    await updateDoc(ref, { notificationsEnabled: false });
+    userData.notificationsEnabled = false;
+    showToast('🔕 Notifiche disattivate');
+  }
+  updateNotifButton();
+};
+
+function updateNotifButton() {
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  if (userData?.notificationsEnabled) {
+    btn.innerHTML = '🔔 Notifiche ON';
+    btn.style.background = 'rgba(57,255,20,0.15)';
+    btn.style.borderColor = 'var(--lime)';
+    btn.style.color = 'var(--lime)';
+  } else {
+    btn.innerHTML = '🔕 Attiva Notifiche';
+    btn.style.background = 'rgba(255,255,255,0.06)';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--text)';
+  }
+}
+
+// Init notifiche dopo login
+async function initApp() {
+  const d = Math.ceil((new Date('2026-06-11') - new Date()) / 86400000);
+  document.getElementById('cd-days').textContent = d > 0 ? d : '🎉';
+  loadLiveCount();
+  loadTab('live');
+  loadLeaderboard();
+  loadSfide();
+  await initPushNotifications();
+  updateNotifButton();
+}
+
+// ═══════════════════════════════════════
+// 📺 ADS SYSTEM - Google AdSense + Rewarded
+// ═══════════════════════════════════════
+
+// Config AdSense (inserisci il tuo publisher ID quando approvato)
+const ADS_CONFIG = {
+  publisherId: 'ca-pub-XXXXXXXXXXXXXXXX', // Da cambiare con il tuo ID AdSense
+  bannerSlot: 'XXXXXXXXXX',
+  rewardedSlot: 'XXXXXXXXXX',
+  interstitialSlot: 'XXXXXXXXXX',
+  enabled: false // Cambia in true quando AdSense è approvato
+};
+
+// Stato ads
+let adsState = {
+  rewardedPicksToday: 0,
+  rewardedShieldToday: false,
+  lastInterstitial: 0,
+  pageViews: 0,
+};
+
+// BANNER AD (discreto in fondo alle partite)
+function showBannerAd(containerId) {
+  if (!ADS_CONFIG.enabled) return;
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `
+    <div style="text-align:center;padding:8px;background:rgba(255,255,255,0.03);border-top:1px solid var(--border);font-size:10px;color:var(--muted);">
+      Pubblicità
+      <ins class="adsbygoogle" style="display:block;text-align:center;"
+        data-ad-client="${ADS_CONFIG.publisherId}"
+        data-ad-slot="${ADS_CONFIG.bannerSlot}"
+        data-ad-format="auto"></ins>
+    </div>`;
+  if (window.adsbygoogle) (adsbygoogle = window.adsbygoogle || []).push({});
+}
+
+// INTERSTITIAL AD (solo tra navigazioni, max 1 ogni 3 pagine)
+function maybeShowInterstitial() {
+  if (!ADS_CONFIG.enabled) return;
+  adsState.pageViews++;
+  const now = Date.now();
+  if (adsState.pageViews % 3 === 0 && now - adsState.lastInterstitial > 120000) {
+    adsState.lastInterstitial = now;
+    showInterstitialModal();
+  }
+}
+
+function showInterstitialModal() {
+  const modal = document.getElementById('adsInterstitial');
+  if (modal) { modal.classList.add('open'); document.body.classList.add('modal-open'); }
+}
+
+window.closeInterstitial = () => {
+  const modal = document.getElementById('adsInterstitial');
+  if (modal) { modal.classList.remove('open'); document.body.classList.remove('modal-open'); }
+};
+
+// REWARDED AD → sblocca pick extra
+window.watchAdForPick = () => {
+  if (!userData) return;
+  const level = getLevel(userData.points || 0);
+  const maxPicks = getMaxPicks(level);
+  const extraAllowed = 2; // max 2 pick extra con ads al giorno
+
+  if (adsState.rewardedPicksToday >= extraAllowed) {
+    showToast('Hai già guardato il massimo di video oggi!');
+    return;
+  }
+
+  if (!ADS_CONFIG.enabled) {
+    // Simulazione per test
+    simulateRewardedAd(() => {
+      adsState.rewardedPicksToday++;
+      userData.rewardedPicksToday = (userData.rewardedPicksToday || 0) + 1;
+      showToast(`✓ Pick extra sbloccato! (+${adsState.rewardedPicksToday} oggi)`);
+      document.getElementById('rewarded-ad-wrap')?.remove();
+    });
+    return;
+  }
+
+  // Real rewarded ad
+  showRewardedAd(() => {
+    adsState.rewardedPicksToday++;
+    userData.rewardedPicksToday = (userData.rewardedPicksToday || 0) + 1;
+    showToast(`✓ Pick extra sbloccato!`);
+  });
+};
+
+// REWARDED AD → sblocca Shield per oggi (senza PRO)
+window.watchAdForShield = () => {
+  if (adsState.rewardedShieldToday) {
+    showToast('Hai già sbloccato lo Shield oggi!');
+    return;
+  }
+  if (!ADS_CONFIG.enabled) {
+    simulateRewardedAd(() => {
+      adsState.rewardedShieldToday = true;
+      userData.tempShield = new Date().toDateString();
+      showToast('🛡️ Streak Shield sbloccato per oggi!');
+    });
+    return;
+  }
+  showRewardedAd(() => {
+    adsState.rewardedShieldToday = true;
+    userData.tempShield = new Date().toDateString();
+    showToast('🛡️ Streak Shield sbloccato per oggi!');
+  });
+};
+
+// SIMULAZIONE rewarded ad (per test, prima di avere AdSense approvato)
+function simulateRewardedAd(callback) {
+  const modal = document.getElementById('adsRewardedModal');
+  if (!modal) return;
+  let countdown = 5;
+  modal.classList.add('open');
+  document.body.classList.add('modal-open');
+  const el = document.getElementById('ads-countdown');
+  const interval = setInterval(() => {
+    countdown--;
+    if (el) el.textContent = countdown;
+    if (countdown <= 0) {
+      clearInterval(interval);
+      modal.classList.remove('open');
+      document.body.classList.remove('modal-open');
+      callback();
+    }
+  }, 1000);
+}
+
+function showRewardedAd(callback) {
+  // Integrazione reale AdSense Rewarded
+  if (!window.googletag) { simulateRewardedAd(callback); return; }
+  // TODO: implementare googletag rewarded quando AdSense approvato
+  simulateRewardedAd(callback);
+}
 </script>
+
+<!-- ═══ ADS MODALS ═══ -->
+
+<!-- REWARDED AD MODAL -->
+<div id="adsRewardedModal" class="modal">
+  <div class="modal-box" style="max-width:340px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:16px;">📺</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--lime);margin-bottom:8px;">GUARDA IL VIDEO</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Guarda un breve video per sbloccare il tuo pick extra o lo Streak Shield!</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:64px;color:var(--gold);font-weight:700;" id="ads-countdown">5</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;">secondi rimanenti...</div>
+    <div style="margin-top:16px;background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;font-size:11px;color:var(--muted);">
+      📺 Qui apparirà il video pubblicitario quando AdSense sarà attivo
+    </div>
+  </div>
+</div>
+
+<!-- INTERSTITIAL AD MODAL -->
+<div id="adsInterstitial" class="modal">
+  <div class="modal-box" style="max-width:340px;text-align:center;">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Pubblicità</div>
+    <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:40px 20px;margin-bottom:16px;font-size:12px;color:var(--muted);">
+      📺 Spazio pubblicitario AdSense
+    </div>
+    <button onclick="closeInterstitial()" style="width:100%;padding:12px;background:var(--purple);border:none;color:white;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:1px;">
+      CONTINUA →
+    </button>
+  </div>
+</div>
+
+<!-- ADS BANNER PLACEHOLDER (in fondo alle partite) -->
+<div id="ads-banner-bottom" style="display:none;"></div>
+
 </body>
 </html>

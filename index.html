@@ -1932,3 +1932,15 @@ async function installApp() {
 </script>
 </body>
 </html>
+<script>
+// Override clearSel per bloccare free users
+const _origClear = window.clearSel;
+window.clearSel = async function() {
+  const plan = window._userData?.plan;
+  if(plan !== 'premium' && plan !== 'pro') {
+    alert('🔒 Solo Premium può cambiare il pick!\nVai su PROFILO → DIVENTA PREMIUM');
+    return;
+  }
+  if(_origClear) await _origClear();
+};
+</script>

@@ -735,6 +735,8 @@ async function loadUserData(user) {
       correctPicks: 0,
       lastPickDate: null,
       lastPickPlayer: null,
+      analysesDate: null,
+      analysesPlayerIds: [],
       createdAt: serverTimestamp()
     };
     await setDoc(ref, userData);
@@ -1192,6 +1194,32 @@ function calcOdds(prob){
 
 window.openModal = (player, matchName) => {
   currentPlayer=player; currentMatch=matchName;
+  // GATE ANALISI: 3 gratis/giorno per FREE (giocatori diversi)
+  const FREE_ANALYSES = 3;
+  const isPremium = userData?.plan === 'premium' || userData?.plan === 'pro';
+  if (userData && !isPremium) {
+    const todayStr = new Date().toDateString();
+    if (userData.analysesDate !== todayStr) {
+      userData.analysesDate = todayStr;
+      userData.analysesPlayerIds = [];
+    }
+    if (!Array.isArray(userData.analysesPlayerIds)) userData.analysesPlayerIds = [];
+    const alreadySeen = userData.analysesPlayerIds.includes(player.id);
+    if (!alreadySeen && userData.analysesPlayerIds.length >= FREE_ANALYSES) {
+      showToast('🔒 Analisi gratis finite per oggi! Guarda un video o passa a Premium 👑');
+      return;
+    }
+    if (!alreadySeen) {
+      userData.analysesPlayerIds.push(player.id);
+      if (currentUser) {
+        const aref = doc(db, 'users', currentUser.uid);
+        updateDoc(aref, {
+          analysesDate: userData.analysesDate,
+          analysesPlayerIds: userData.analysesPlayerIds
+        }).catch(e => console.error('analisi save:', e));
+      }
+    }
+  }
   const prob=calcP(player), odds=calcOdds(prob);
   const gpg=player.appearances>0?(player.goals/player.appearances).toFixed(2):'0.00';
   document.getElementById('m-photo').src=player.photo||'';

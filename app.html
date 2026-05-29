@@ -1944,7 +1944,7 @@ function showRewardedAd(callback) {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
-      const reg = await navigator.serviceWorker.register('/pwa-sw.js');
+      const reg = await navigator.serviceWorker.register('pwa-sw.js');
       console.log('✅ SW registrato:', reg.scope);
     } catch(e) {
       console.log('SW error:', e);

@@ -1,8 +1,8 @@
 const CACHE_NAME = 'nexa-streak-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json'
+  './',
+  'index.html',
+  'manifest.json'
 ];
 
 // Install
@@ -43,10 +43,10 @@ self.addEventListener('push', e => {
   const title = data.title || 'NEXA Streak Master';
   const options = {
     body: data.body || '⚽ Il tuo pick ha segnato!',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: 'icon-192.png',
+    badge: 'icon-192.png',
     tag: 'nexa-pick',
-    data: { url: data.url || '/' }
+    data: { url: data.url || './' }
   };
   e.waitUntil(self.registration.showNotification(title, options));
 });
@@ -54,5 +54,5 @@ self.addEventListener('push', e => {
 // Notification click
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.openWindow(e.notification.data?.url || '/'));
+  e.waitUntil(clients.openWindow(e.notification.data?.url || './'));
 });

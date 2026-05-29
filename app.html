@@ -1158,7 +1158,7 @@ function renderPl(players,teamName,matchName){
     const rc=prob>=60?'rh':prob>=40?'rm':'rl';
     const rt=prob>=60?'Alta':prob>=40?'Media':'Bassa';
     const isSel=selectedPlayer&&selectedPlayer.id===p.id;
-    const isLk=selectedPlayer&&!isSel;
+    const isLk=selectedPlayer&&!isSel&&(currentTab==='live'||currentTab==='today');
     const isPickedToday = userData?.lastPickDate === new Date().toDateString() && userData?.lastPickPlayer?.id === p.id;
     const ep=JSON.stringify(p).replace(/'/g,"\\'").replace(/"/g,'&quot;');
     const em=matchName.replace(/'/g,"\\'");

@@ -152,73 +152,54 @@ app.get('/api/player/:id/history', async (req, res) => {
 app.get('/api/verify-pick/:playerId', async (req, res) => {
   const { playerId } = req.params;
   const { fixtureId, pickType } = req.query;
-  // pickType: 'goal' | 'assist' | 'double' | 'triple'
 
   try {
     console.log(`🔍 Verifica: player ${playerId}, type: ${pickType||'goal'}`);
 
-    let fixtures = [];
+    let match = null;
 
     if (fixtureId) {
       const r = await axios.get(`${BASE}/fixtures`, { params: { id: fixtureId }, headers: H });
-      fixtures = r.data.response || [];
+      match = (r.data.response || [])[0] || null;
     } else {
       const today = formatDate(new Date());
-      const r = await axios.get(`${BASE}/fixtures`, { params: { date: today }, headers: H });
-      fixtures = r.data.response || [];
+      const r = await axios.get(`${BASE}/fixtures/players`, {
+        params: { player: playerId, date: today },
+        headers: H
+      });
+      const withPlayer = r.data.response || [];
+
+      if (withPlayer.length > 0) {
+        const fid = withPlayer[0].fixture.id;
+        const fr = await axios.get(`${BASE}/fixtures`, { params: { id: fid }, headers: H });
+        match = (fr.data.response || [])[0] || null;
+      }
     }
 
-    for (const match of fixtures) {
-      const status = match.fixture.status.short;
-      const isFinished = ['FT','AET','PEN'].includes(status);
-      const isLive = ['1H','2H','HT','ET'].includes(status);
+    if (!match) {
+      return res.json({ status: 'not_found', scored: false, playerGoals: 0, playerAssists: 0 });
+    }
 
-      const playerGoals = (match.events||[]).filter(e =>
-        e.type === 'Goal' && e.player?.id == playerId &&
-        e.detail !== 'Missed Penalty' && e.detail !== 'Own Goal'
-      ).length;
+    const status = match.fixture.status.short;
+    const isFinished = ['FT', 'AET', 'PEN'].includes(status);
+    const isLive     = ['1H', '2H', 'HT', 'ET', 'BT', 'P'].includes(status);
 
-      const playerAssists = (match.events||[]).filter(e =>
-        e.type === 'Goal' && e.assist?.id == playerId
-      ).length;
+    const playerGoals = (match.events || []).filter(e =>
+      e.type === 'Goal' && e.player?.id == playerId &&
+      e.detail !== 'Missed Penalty' && e.detail !== 'Own Goal'
+    ).length;
 
-      // Controlla se il giocatore ha partecipato
-      const involved = playerGoals > 0 || playerAssists > 0;
-      if (!involved && !isFinished && !isLive) continue;
+    const playerAssists = (match.events || []).filter(e =>
+      e.type === 'Goal' && e.assist?.id == playerId
+    ).length;
 
-      let scored = false;
-      let resultMsg = '';
-
-      switch(pickType) {
-        case 'assist':
-          scored = playerAssists >= 1;
-          resultMsg = scored ? `🎯 ${playerAssists} assist` : 'Nessun assist';
-          break;
-        case 'double':
-          scored = playerGoals >= 2;
-          resultMsg = scored ? `⚽⚽ DOPPIETTA! ${playerGoals} gol` : `Solo ${playerGoals} gol`;
-          break;
-        case 'triple':
-          scored = playerGoals >= 3;
-          resultMsg = scored ? `⚽⚽⚽ TRIPLETTA! ${playerGoals} gol` : `Solo ${playerGoals} gol`;
-          break;
-        case 'goal_assist':
-          scored = playerGoals >= 1 && playerAssists >= 1;
-          resultMsg = scored ? `⚽🎯 Gol+Assist!` : `${playerGoals} gol, ${playerAssists} assist`;
-          break;
-        default: // 'goal'
-          scored = playerGoals >= 1;
-          resultMsg = scored ? `⚽ ${playerGoals} gol` : 'Nessun gol';
-      }
-
+    if (!isFinished) {
       return res.json({
-        status: isFinished ? 'finished' : isLive ? 'live' : 'pending',
+        status: isLive ? 'live' : 'not_played',
         fixtureStatus: status,
         playerGoals,
         playerAssists,
-        scored,
-        resultMsg,
-        pickType: pickType || 'goal',
+        scored: false,
         home: match.teams.home.name,
         away: match.teams.away.name,
         score: `${match.goals.home}-${match.goals.away}`,
@@ -227,8 +208,47 @@ app.get('/api/verify-pick/:playerId', async (req, res) => {
       });
     }
 
-    res.json({ status: 'not_found', scored: false, playerGoals: 0, playerAssists: 0 });
-  } catch(e) {
+    let scored = false;
+    let resultMsg = '';
+
+    switch (pickType) {
+      case 'assist':
+        scored = playerAssists >= 1;
+        resultMsg = scored ? `🎯 ${playerAssists} assist` : 'Nessun assist';
+        break;
+      case 'double':
+        scored = playerGoals >= 2;
+        resultMsg = scored ? `⚽⚽ DOPPIETTA! ${playerGoals} gol` : `Solo ${playerGoals} gol`;
+        break;
+      case 'triple':
+        scored = playerGoals >= 3;
+        resultMsg = scored ? `⚽⚽⚽ TRIPLETTA! ${playerGoals} gol` : `Solo ${playerGoals} gol`;
+        break;
+      case 'goal_assist':
+        scored = playerGoals >= 1 && playerAssists >= 1;
+        resultMsg = scored ? `⚽🎯 Gol+Assist!` : `${playerGoals} gol, ${playerAssists} assist`;
+        break;
+      default:
+        scored = playerGoals >= 1;
+        resultMsg = scored ? `⚽ ${playerGoals} gol` : 'Nessun gol';
+    }
+
+    return res.json({
+      status: 'finished',
+      fixtureStatus: status,
+      playerGoals,
+      playerAssists,
+      scored,
+      resultMsg,
+      pickType: pickType || 'goal',
+      home: match.teams.home.name,
+      away: match.teams.away.name,
+      score: `${match.goals.home}-${match.goals.away}`,
+      minute: match.fixture.status.elapsed,
+      fixtureId: match.fixture.id
+    });
+
+  } catch (e) {
     console.error('❌ verify:', e.message);
     res.json({ status: 'error', error: e.message });
   }

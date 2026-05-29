@@ -389,7 +389,7 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
       <button class="sel-clear" onclick="clearSel()">✕ Cambia</button>
     </div>
 
-    <div id="pick-slots-live" style="margin:0 16px 10px;max-width:calc(480px - 32px);margin-left:auto;margin-right:auto;font-size:12px;font-weight:700;color:var(--muted);text-align:center;"></div>
+    <div id="pick-slots-live" style="margin:0 16px 10px;max-width:calc(480px - 32px);margin-left:auto;margin-right:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
 
     <div class="tabs-wrap" style="padding-top:12px;">
       <div class="tabs">
@@ -1484,7 +1484,24 @@ function updatePickButtons() {
   }
   const slotsLiveEl = document.getElementById('pick-slots-live');
   if (slotsLiveEl) {
-    slotsLiveEl.innerHTML = `🎮 Pick di oggi: <strong style="color:var(--lime);">${used}/${maxPicks}</strong>`;
+    const todayStr2 = new Date().toDateString();
+    const premium = userData?.plan === 'premium' || userData?.plan === 'pro';
+    let usedAn = 0;
+    if (Array.isArray(userData?.analysesPlayerIds) && userData?.analysesDate === todayStr2) {
+      usedAn = userData.analysesPlayerIds.length;
+    }
+    const analisiVal = premium
+      ? `<span style="font-size:14px;">&#8734; illimitate</span>`
+      : `${usedAn}<span style="opacity:0.5;font-size:13px;">/3</span>`;
+    slotsLiveEl.innerHTML = `
+      <div style="background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.25);border-radius:10px;padding:9px 6px;text-align:center;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--lime);text-transform:uppercase;margin-bottom:3px;opacity:0.85;">Pick di oggi</div>
+        <div style="font-size:17px;font-weight:800;color:var(--lime);">${used}<span style="opacity:0.5;font-size:13px;">/${maxPicks}</span></div>
+      </div>
+      <div style="background:rgba(108,61,232,0.06);border:1px solid rgba(108,61,232,0.3);border-radius:10px;padding:9px 6px;text-align:center;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--purple2);text-transform:uppercase;margin-bottom:3px;opacity:0.85;">Analisi gratis</div>
+        <div style="font-size:17px;font-weight:800;color:var(--purple2);">${analisiVal}</div>
+      </div>`;
   }
 }
 window.PICK_POINTS = { goal: 15, assist: 12, double: 35, triple: 75, goal_assist: 25 };

@@ -388,7 +388,9 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
       <div style="flex:1;">Pick: <strong id="sel-name">—</strong></div>
       <button class="sel-clear" onclick="clearSel()">✕ Cambia</button>
     </div>
-    
+
+    <div id="pick-slots-live" style="margin:0 16px 10px;max-width:calc(480px - 32px);margin-left:auto;margin-right:auto;font-size:12px;font-weight:700;color:var(--muted);text-align:center;"></div>
+
     <div class="tabs-wrap" style="padding-top:12px;">
       <div class="tabs">
         <button class="tab-btn active" onclick="setTab('live',this)">🔴 LIVE</button>
@@ -1475,10 +1477,14 @@ function updatePickButtons() {
     }
   });
 
+  const used = Array.isArray(userData?.todayPicks) ? userData.todayPicks.length : (userData?.lastPickDate === new Date().toDateString() ? 1 : 0);
   const slotsEl = document.getElementById('pick-slots-info');
   if (slotsEl) {
-    const used = Array.isArray(userData?.todayPicks) ? userData.todayPicks.length : (userData?.lastPickDate === new Date().toDateString() ? 1 : 0);
     slotsEl.innerHTML = `🎮 Picks oggi: <strong style="color:var(--lime);">${used}/${maxPicks}</strong> · LVL ${level} ${getLevelName(level)}`;
+  }
+  const slotsLiveEl = document.getElementById('pick-slots-live');
+  if (slotsLiveEl) {
+    slotsLiveEl.innerHTML = `🎮 Pick di oggi: <strong style="color:var(--lime);">${used}/${maxPicks}</strong>`;
   }
 }
 window.PICK_POINTS = { goal: 15, assist: 12, double: 35, triple: 75, goal_assist: 25 };

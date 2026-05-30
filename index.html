@@ -737,6 +737,8 @@ async function loadUserData(user) {
       correctPicks: 0,
       lastPickDate: null,
       lastPickPlayer: null,
+      todayPicks: [],
+      todayPicksDate: null,
       analysesDate: null,
       analysesPlayerIds: [],
       createdAt: serverTimestamp()
@@ -846,132 +848,104 @@ function checkTodayPick() {
 }
 
 window.verifyPick = async () => {
-  if (!userData?.lastPickPlayer || !currentUser) return;
+  if (!currentUser) return;
   const today = new Date().toDateString();
-  if (userData.lastPickDate !== today) return;
-  
-  const player = userData.lastPickPlayer;
-  const pickType = player.pickType || 'goal';
-  const basePts = player.points || PICK_POINTS[pickType] || 15;
+
+  if (userData.todayPicksDate !== today) { userData.todayPicks = []; }
+  if (!Array.isArray(userData.todayPicks)) userData.todayPicks = [];
+  const picks = userData.todayPicks;
+
   const wrap = document.getElementById('pick-done-wrap');
-  
-  try {
-    wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
-      <div class="pick-done-title">⏳ VERIFICA IN CORSO...</div>
-      <div class="pick-done-sub">${player.name} · ${PICK_LABELS[pickType]||'Gol'}</div>
-    </div>`;
-    
-    const r = await fetch(`${BACKEND}/api/verify-pick/${player.id}?pickType=${pickType}`);
-    const result = await r.json();
-    
-    console.log('🔍 Verifica result:', result);
-    
-    if (result.status === 'finished') {
-      if (result.scored) {
-        const newStreak = (userData.streak || 0) + 1;
-        const streakBonus = newStreak * 2;
-        const pointsEarned = basePts + streakBonus;
-        const newPoints = (userData.points || 0) + pointsEarned;
-        const newCorrect = (userData.correctPicks || 0) + 1;
-        const newTotal = (userData.totalPicks || 0) + 1;
-        const newMax = Math.max(userData.maxStreak || 0, newStreak);
-        
-        const ref = doc(db, 'users', currentUser.uid);
-        await updateDoc(ref, {
-          streak: newStreak, maxStreak: newMax, points: newPoints,
-          correctPicks: newCorrect, totalPicks: newTotal,
-          lastPickDate: null, lastPickPlayer: null,
-          lastPickResult: { scored: true, player: player.name, pickType, points: pointsEarned, date: today }
-        });
-        userData.streak = newStreak; userData.points = newPoints;
-        userData.correctPicks = newCorrect; userData.totalPicks = newTotal;
-        userData.maxStreak = newMax; userData.lastPickDate = null; userData.lastPickPlayer = null;
-        selectedPlayer = null;
-        updateUI(); updateBanner();
-        
-        const emoji = pickType==='triple'?'🎉🎉🎉':pickType==='double'?'🎉🎉':'🎉';
-        wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;background:linear-gradient(135deg,rgba(57,255,20,0.25),rgba(57,255,20,0.1));">
-          <div class="pick-done-title">${emoji} ${player.name} · ${result.resultMsg||'INDOVINATO'}!</div>
-          <div class="pick-done-sub">+${pointsEarned} punti · Streak ${newStreak}🔥 · ${result.score}</div>
-        </div>`;
-        showToast(`${emoji} ${player.name} · ${result.resultMsg}! +${pointsEarned} punti!`);
-        if (window.verifyInterval) { clearInterval(window.verifyInterval); window.verifyInterval = null; }
-        setTimeout(() => { wrap.innerHTML = ''; }, 10000);
-        
-      } else {
-        // NON ha segnato - controlla Streak Shield
-        const newTotal = (userData.totalPicks || 0) + 1;
-        const hasShield = userData.plan === 'pro' && (userData.shieldUsed !== getCurrentMonth());
-        const ref = doc(db, 'users', currentUser.uid);
+  if (picks.length === 0) { if (wrap) wrap.innerHTML = ''; return; }
 
-        if (hasShield && (userData.streak || 0) > 0) {
-          // SHIELD ATTIVATO! Streak protetta
-          await updateDoc(ref, {
-            totalPicks: newTotal,
-            lastPickDate: null,
-            lastPickPlayer: null,
-            shieldUsed: getCurrentMonth(),
-            lastPickResult: { scored: false, shielded: true, player: player.name, date: today }
-          });
-          userData.totalPicks = newTotal;
-          userData.lastPickDate = null; userData.lastPickPlayer = null;
-          userData.shieldUsed = getCurrentMonth();
-          selectedPlayer = null;
-          updateUI(); updateBanner();
+  if (wrap) wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
+    <div class="pick-done-title">⏳ VERIFICA IN CORSO...</div>
+    <div class="pick-done-sub">Controllo ${picks.length} pick...</div></div>`;
 
-          wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;background:linear-gradient(135deg,rgba(108,61,232,0.3),rgba(108,61,232,0.1));border-color:var(--purple2);">
-            <div class="pick-done-title" style="color:var(--purple2);">🛡️ STREAK SHIELD ATTIVATO!</div>
-            <div class="pick-done-sub">${player.name} non ha ${PICK_LABELS[pickType]||'segnato'} · Ma la tua streak di ${userData.streak}🔥 è protetta!</div>
-          </div>`;
-          showToast(`🛡️ Shield attivato! Streak ${userData.streak}🔥 salvata!`);
-        } else {
-          // Reset streak normale
-          await updateDoc(ref, {
-            streak: 0,
-            totalPicks: newTotal,
-            lastPickDate: null,
-            lastPickPlayer: null,
-            lastPickResult: { scored: false, player: player.name, date: today }
-          });
-          userData.streak = 0; userData.totalPicks = newTotal;
-          userData.lastPickDate = null; userData.lastPickPlayer = null;
-          selectedPlayer = null;
-          updateUI(); updateBanner();
-
-          const shieldMsg = userData.plan !== 'pro' && (userData.streak || 0) > 2
-            ? '<br>💡 Con il piano PRO avresti uno Streak Shield!'
-            : '';
-
-          wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;background:rgba(255,77,77,0.1);border-color:var(--red);">
-            <div class="pick-done-title" style="color:var(--red);">😔 ${player.name} · ${result.resultMsg||'Non ha segnato'}</div>
-            <div class="pick-done-sub">Streak resettata · ${result.score} · Riprova domani!${shieldMsg}</div>
-          </div>`;
-          showToast(`😔 ${player.name} non ha ${PICK_LABELS[pickType]||'segnato'}. Streak resettata.`);
-        }
-        if (window.verifyInterval) { clearInterval(window.verifyInterval); window.verifyInterval = null; }
-        setTimeout(() => { wrap.innerHTML = ''; }, 10000);
-      }
-    } else if (result.status === 'not_found' || result.status === 'not_played') { wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${player.name} · Partita non ancora iniziata</div></div>`; } else if (result.status === 'live') {
-      wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
-        <div class="pick-done-title">⚽ IN CORSO · ${result.score}</div>
-        <div class="pick-done-sub">${player.name} · ${result.minute}' · Gol segnati oggi: ${result.playerGoals}</div>
-        <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">🔄 AGGIORNA</button>
-      </div>`;
-    } else {
-      // Non ancora giocato
-      wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
-        <div class="pick-done-title">✓ PICK DI OGGI</div>
-        <div class="pick-done-sub">${player.name} · In attesa della partita</div>
-        <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">🔍 VERIFICA</button>
-      </div>`;
+  // 1) Interroga il backend per ogni pick (senza modificare nulla di persistente)
+  const outcomes = [];
+  for (const pick of picks) {
+    const pickType = pick.pickType || 'goal';
+    try {
+      const r = await fetch(`${BACKEND}/api/verify-pick/${pick.id}?pickType=${pickType}`);
+      const result = await r.json();
+      outcomes.push({ pick, status: result.status, scored: !!result.scored, score: result.score || '', resultMsg: result.resultMsg || '' });
+    } catch(e) {
+      console.error('verify pick error:', e);
+      outcomes.push({ pick, status: 'error', scored: false });
     }
-  } catch(e) {
-    console.error('Verify error:', e);
-    wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
-      <div class="pick-done-title">✓ PICK DI OGGI</div>
-      <div class="pick-done-sub">${player.name} · Errore verifica, riprova</div>
-      <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">🔄 RIPROVA</button>
-    </div>`;
+  }
+
+  const finished = outcomes.filter(o => o.status === 'finished');
+  const pending  = outcomes.filter(o => o.status !== 'finished');
+
+  // 2) Se NON tutte le partite sono finite -> mostra stato, NON toccare punti/streak
+  if (pending.length > 0) {
+    if (wrap) wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
+      <div class="pick-done-title">✅ ${finished.length}/${picks.length} partite finite</div>
+      <div class="pick-done-sub">${pending.length} ancora in attesa · il risultato arriva quando finiscono tutte</div>
+      <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">🔄 AGGIORNA</button></div>`;
+    return;
+  }
+
+  // 3) Tutte finite: calcola TUTTO in un colpo solo
+  const wins = outcomes.filter(o => o.scored);
+  const total = picks.length;
+
+  // Punti: somma base + bonus streak (bonus calcolato una volta sulla streak attuale)
+  const streakBonus = (userData.streak || 0) * 2;
+  let pointsEarned = 0;
+  wins.forEach(o => {
+    const basePts = o.pick.points || PICK_POINTS[o.pick.pickType || 'goal'] || 15;
+    pointsEarned += basePts;
+  });
+  if (wins.length > 0) pointsEarned += streakBonus;
+
+  const newPoints   = (userData.points || 0) + pointsEarned;
+  const newCorrect  = (userData.correctPicks || 0) + wins.length;
+  const newTotal    = (userData.totalPicks || 0) + total;
+
+  const updates = {
+    points: newPoints,
+    correctPicks: newCorrect,
+    totalPicks: newTotal,
+    todayPicks: [],
+    todayPicksDate: today,
+    lastPickResult: { date: today, wins: wins.length, total }
+  };
+
+  let streakMsg = '';
+  if (wins.length > 0) {
+    const newStreak = (userData.streak || 0) + 1;
+    updates.streak = newStreak;
+    updates.maxStreak = Math.max(userData.maxStreak || 0, newStreak);
+    streakMsg = `Streak ${newStreak}🔥`;
+  } else {
+    const hasShield = userData.plan === 'pro' && (userData.shieldUsed !== getCurrentMonth());
+    if (hasShield && (userData.streak || 0) > 0) {
+      updates.shieldUsed = getCurrentMonth();
+      streakMsg = `🛡️ Shield! Streak ${userData.streak}🔥 salvata`;
+    } else {
+      updates.streak = 0;
+      streakMsg = 'Streak resettata';
+    }
+  }
+
+  const ref = doc(db, 'users', currentUser.uid);
+  await updateDoc(ref, updates);
+  Object.assign(userData, updates);
+  selectedPlayer = null;
+  updateUI(); updateBanner();
+
+  if (wrap) {
+    const bg = wins.length > 0
+      ? 'background:linear-gradient(135deg,rgba(57,255,20,0.25),rgba(57,255,20,0.1));'
+      : 'background:rgba(255,77,77,0.1);border-color:var(--red);';
+    wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;${bg}">
+      <div class="pick-done-title">${wins.length}/${total} indovinati · +${pointsEarned} punti</div>
+      <div class="pick-done-sub">${streakMsg} · Giornata completata</div></div>`;
+    if (window.verifyInterval) { clearInterval(window.verifyInterval); window.verifyInterval = null; }
+    setTimeout(() => { if (wrap) wrap.innerHTML = ''; }, 12000);
   }
 };
 
@@ -1157,13 +1131,17 @@ function renderPl(players,teamName,matchName){
     const prob=calcP(p);
     const rc=prob>=60?'rh':prob>=40?'rm':'rl';
     const rt=prob>=60?'Alta':prob>=40?'Media':'Bassa';
-    const isSel=selectedPlayer&&selectedPlayer.id===p.id;
-    const isLk=selectedPlayer&&!isSel&&(currentTab==='live'||currentTab==='today');
-    const isPickedToday = userData?.lastPickDate === new Date().toDateString() && userData?.lastPickPlayer?.id === p.id;
+    const todayStr3 = new Date().toDateString();
+    const picksList = (userData?.todayPicksDate === todayStr3 && Array.isArray(userData?.todayPicks)) ? userData.todayPicks : [];
+    const levelMP = getLevel(userData?.points || 0);
+    const maxMP = getMaxPicks(levelMP);
+    const isPickedToday = picksList.some(pk => pk.id === p.id);
+    const isSel = isPickedToday;
+    const isLk = !isPickedToday && picksList.length >= maxMP && (currentTab==='live'||currentTab==='today');
     const ep=JSON.stringify(p).replace(/'/g,"\\'").replace(/"/g,'&quot;');
     const em=matchName.replace(/'/g,"\\'");
     return`<div class="prow ${isSel||isPickedToday?'is-sel':''} ${isLk?'locked':''}"
-      onclick="${isLk?`showToast('Hai già scelto ${selectedPlayer.name}!')`:
+      onclick="${isLk?`showToast('🎯 Hai usato tutti i tuoi pick di oggi!')`:
       `openModal(JSON.parse(this.dataset.p),this.dataset.m)`}"
       data-p="${ep}" data-m="${em}">
       <img class="p-photo ${isSel?'sel':''}" src="${p.photo||''}" onerror="this.src=''">
@@ -1288,25 +1266,39 @@ window.closeModal = () => {
 window.confirmSel = async () => {
   if(!currentPlayer||!currentUser) return;
   const today=new Date().toDateString();
-  const alreadyPicked = userData?.lastPickDate === today;
-  if(alreadyPicked){showToast('Hai già fatto il pick di oggi!');return;}
-  if(selectedPlayer&&selectedPlayer.id===currentPlayer.id){
-    selectedPlayer=null;
-    const ref=doc(db,'users',currentUser.uid);
-    await updateDoc(ref,{lastPickPlayer:null,lastPickDate:null});
-    userData.lastPickPlayer=null; userData.lastPickDate=null;
-    updateBanner();
-    document.getElementById('playerModal').classList.remove('open');
-    document.body.classList.remove('modal-open');
-    showToast('🔄 Pick annullato');reRender();
-    document.getElementById('pick-done-wrap').innerHTML='';
+
+  // Nuovo giorno -> azzera la lista dei pick
+  if(userData.todayPicksDate !== today){
+    userData.todayPicks = [];
+    userData.todayPicksDate = today;
+  }
+  if(!Array.isArray(userData.todayPicks)) userData.todayPicks = [];
+
+  // Quanti pick puoi fare in base al livello
+  const level = getLevel(userData?.points || 0);
+  const maxPicks = getMaxPicks(level);
+
+  // Hai gia scelto QUESTO giocatore oggi?
+  if(userData.todayPicks.some(p => p.id === currentPlayer.id)){
+    showToast('Hai già scelto '+currentPlayer.name+' oggi!');
     return;
   }
-  if(selectedPlayer){showToast('Prima deseleziona '+selectedPlayer.name);return;}
-  selectedPlayer=currentPlayer;
-  const pickData = { ...currentPlayer, pickType: window.currentPickType, points: PICK_POINTS[window.currentPickType] };
+
+  // Hai raggiunto il massimo di pick?
+  if(userData.todayPicks.length >= maxPicks){
+    showToast('🎯 Hai usato tutti i tuoi pick di oggi ('+maxPicks+'/'+maxPicks+')!');
+    return;
+  }
+
+  // Aggiungi il pick alla lista
+  const pickData = { ...currentPlayer, pickType: window.currentPickType, points: PICK_POINTS[window.currentPickType], result: null };
+  userData.todayPicks.push(pickData);
+
   const ref=doc(db,'users',currentUser.uid);
-  await updateDoc(ref,{lastPickPlayer:pickData,lastPickDate:today});
+  await updateDoc(ref,{todayPicks:userData.todayPicks, todayPicksDate:today});
+
+  // Manteniamo anche lastPickPlayer/Date per compatibilita con il resto (ultimo pick scelto)
+  selectedPlayer=currentPlayer;
   userData.lastPickPlayer=pickData; userData.lastPickDate=today;
   updateBanner();
   document.getElementById('playerModal').classList.remove('open');
@@ -1330,16 +1322,31 @@ window.clearSel = async () => {
 
 function updateBanner(){
   const b=document.getElementById('sel-banner');
-  if(selectedPlayer){document.getElementById('sel-name').textContent=selectedPlayer.name;b.classList.add('show');}
-  else b.classList.remove('show');
+  if(!b) return;
+  const today=new Date().toDateString();
+  const picks=(userData?.todayPicksDate===today && Array.isArray(userData?.todayPicks))?userData.todayPicks:[];
+  const nameEl=document.getElementById('sel-name');
+  if(picks.length>0){
+    if(nameEl){
+      if(picks.length===1) nameEl.textContent=picks[0].name;
+      else nameEl.textContent=picks.length+' pick di oggi ('+picks.map(p=>p.name).join(', ')+')';
+    }
+    b.classList.add('show');
+  } else {
+    b.classList.remove('show');
+  }
 }
 
 function reRender(){
+  const today=new Date().toDateString();
+  const picks=(userData?.todayPicksDate===today && Array.isArray(userData?.todayPicks))?userData.todayPicks:[];
+  const level=getLevel(userData?.points||0);
+  const maxP=getMaxPicks(level);
   document.querySelectorAll('.prow').forEach(row=>{
     try{
       const p=JSON.parse(row.dataset.p||'{}');if(!p.id)return;
-      const iS=selectedPlayer&&selectedPlayer.id===p.id;
-      const iL=selectedPlayer&&!iS;
+      const iS=picks.some(pk=>pk.id===p.id);
+      const iL=!iS && picks.length>=maxP && (currentTab==='live'||currentTab==='today');
       row.className=`prow ${iS?'is-sel':''} ${iL?'locked':''}`;
       const nm=row.querySelector('.p-name');if(nm){nm.className=`p-name ${iS?'sel':''}`;nm.textContent=(iS?'✓ ':'')+p.name;}
       const ph=row.querySelector('.p-photo');if(ph)ph.className=`p-photo ${iS?'sel':''}`;

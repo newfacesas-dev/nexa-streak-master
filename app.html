@@ -291,6 +291,7 @@ body.modal-open { overflow:hidden; }
 nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0); }
 .nav-btn { flex:1;padding:10px 4px 8px;background:none;border:none;color:var(--muted);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all 0.2s;position:relative; }
 .nav-icon { font-size:22px;line-height:1; }
+.nav-icon img { width:24px;height:24px;display:block;object-fit:contain; }
 .nav-btn.active { color:var(--lime); }
 .nav-btn.active::before { content:'';position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--lime);border-radius:0 0 2px 2px; }
 
@@ -676,11 +677,11 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
 <div class="toast" id="toast"></div>
 
 <nav id="mainNav" style="display:none;">
-  <button class="nav-btn active" onclick="switchPage('home',this)"><span class="nav-icon">🏠</span>HOME</button>
-  <button class="nav-btn" onclick="switchPage('live',this)"><span class="nav-icon">⚽</span>LIVE</button>
-  <button class="nav-btn" onclick="switchPage('sfide',this)"><span class="nav-icon">🎯</span>SFIDE</button>
-  <button class="nav-btn" onclick="switchPage('classifica',this)"><span class="nav-icon">🏆</span>CLASS</button>
-  <button class="nav-btn" onclick="switchPage('profilo',this)"><span class="nav-icon">👤</span>PROFILO</button>
+  <button class="nav-btn active" onclick="switchPage('home',this)"><span class="nav-icon"><img src="nav-home.png" alt="Home"></span>HOME</button>
+  <button class="nav-btn" onclick="switchPage('live',this)"><span class="nav-icon"><img src="nav-live.png" alt="Live"></span>LIVE</button>
+  <button class="nav-btn" onclick="switchPage('sfide',this)"><span class="nav-icon"><img src="nav-sfide.png" alt="Sfide"></span>SFIDE</button>
+  <button class="nav-btn" onclick="switchPage('classifica',this)"><span class="nav-icon"><img src="nav-class.png" alt="Classifica"></span>CLASS</button>
+  <button class="nav-btn" onclick="switchPage('profilo',this)"><span class="nav-icon"><img src="nav-profilo.png" alt="Profilo"></span>PROFILO</button>
 </nav>
 
 <!-- FIREBASE -->

@@ -440,6 +440,11 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
     </div>
     <div class="page-hdr"><div class="page-ttl">👤 PROFILO</div></div>
     <div class="prof-wrap">
+      <!-- INTERRUTTORE AUDIO -->
+      <div onclick="toggleSound()" style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;cursor:pointer;">
+        <span id="sound-toggle-label" style="font-weight:700;font-size:14px;color:var(--text);">🔊 Suoni: ON</span>
+        <span style="color:var(--muted);font-size:12px;">tocca per cambiare</span>
+      </div>
       <div class="prof-hero">
         <div class="prof-av" id="prof-av">👤</div>
         <div class="prof-name" id="prof-name">—</div>
@@ -725,6 +730,7 @@ async function loadUserData(user) {
   const snap = await getDoc(ref);
   if (snap.exists()) {
     userData = snap.data();
+    soundEnabled = (userData.soundOn !== false); // acceso salvo disattivazione esplicita
   } else {
     userData = {
       uid: user.uid,
@@ -740,6 +746,7 @@ async function loadUserData(user) {
       lastPickPlayer: null,
       todayPicks: [],
       todayPicksDate: null,
+      soundOn: true,
       analysesDate: null,
       analysesPlayerIds: [],
       createdAt: serverTimestamp()
@@ -916,12 +923,12 @@ window.verifyPick = async () => {
   };
 
   let streakMsg = '';
-  if (wins.length > 0) {
+  if (wins.length > 0) { playSound('win');
     const newStreak = (userData.streak || 0) + 1;
     updates.streak = newStreak;
     updates.maxStreak = Math.max(userData.maxStreak || 0, newStreak);
     streakMsg = `Streak ${newStreak}🔥`;
-  } else {
+  } else { playSound('lose');
     const hasShield = userData.plan === 'pro' && (userData.shieldUsed !== getCurrentMonth());
     if (hasShield && (userData.streak || 0) > 0) {
       updates.shieldUsed = getCurrentMonth();
@@ -1201,6 +1208,7 @@ window.openModal = (player, matchName) => {
       }
     }
   }
+  playSound('open');
   const prob=calcP(player), odds=calcOdds(prob);
   const gpg=player.appearances>0?(player.goals/player.appearances).toFixed(2):'0.00';
   document.getElementById('m-photo').src=player.photo||'';
@@ -1304,6 +1312,7 @@ window.confirmSel = async () => {
   updateBanner();
   document.getElementById('playerModal').classList.remove('open');
   document.body.classList.remove('modal-open');
+  playSound('pick');
   showToast(`✓ ${selectedPlayer.name} · ${PICK_LABELS[window.currentPickType]}! 🍀`);
   reRender();
   document.getElementById('pick-done-wrap').innerHTML=`<div class="pick-done-banner" style="margin:12px 16px 0;"><div class="pick-done-title">✓ PICK DI OGGI</div><div class="pick-done-sub">${selectedPlayer.name} · ${PICK_LABELS[window.currentPickType]} · +${PICK_POINTS[window.currentPickType]} pts se indovini</div><button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button></div>`;
@@ -1578,6 +1587,60 @@ window.setPickType = (type, btn) => {
     btn2.textContent = `✓ SELEZIONA · ${PICK_LABELS[type]} (+${pts}pts)`;
   }
 };
+// ============ MOTORE AUDIO ============
+let soundEnabled = true; // default acceso
+let _audioCtx = null;
+function _getAudioCtx(){
+  if(!_audioCtx){
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e){ return null; }
+  }
+  if(_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+function _beep(freq, startTime, duration, type='sine', vol=0.15){
+  const ctx = _getAudioCtx(); if(!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(gain); gain.connect(ctx.destination);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(vol, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
+function playSound(kind){
+  if(!soundEnabled) return;
+  const ctx = _getAudioCtx(); if(!ctx) return;
+  const t = ctx.currentTime;
+  if(kind === 'open'){
+    _beep(440, t, 0.08, 'triangle', 0.10);
+  } else if(kind === 'pick'){
+    _beep(523, t, 0.10, 'sine', 0.14);
+    _beep(784, t + 0.09, 0.14, 'sine', 0.14);
+  } else if(kind === 'win'){
+    _beep(523, t, 0.12, 'sine', 0.16);
+    _beep(659, t + 0.10, 0.12, 'sine', 0.16);
+    _beep(784, t + 0.20, 0.12, 'sine', 0.16);
+    _beep(1047, t + 0.30, 0.25, 'sine', 0.16);
+  } else if(kind === 'lose'){
+    _beep(392, t, 0.18, 'sawtooth', 0.10);
+    _beep(262, t + 0.16, 0.30, 'sawtooth', 0.10);
+  }
+}
+window.toggleSound = async () => {
+  soundEnabled = !soundEnabled;
+  if(soundEnabled){ _getAudioCtx(); playSound('pick'); }
+  if(currentUser){
+    try { await updateDoc(doc(db,'users',currentUser.uid), { soundOn: soundEnabled }); } catch(e){}
+  }
+  if(userData) userData.soundOn = soundEnabled;
+  const lbl = document.getElementById('sound-toggle-label');
+  if(lbl) lbl.textContent = soundEnabled ? '🔊 Suoni: ON' : '🔇 Suoni: OFF';
+};
+
 function getCurrentMonth() {
   const d = new Date();
   return `${d.getFullYear()}-${d.getMonth()+1}`;

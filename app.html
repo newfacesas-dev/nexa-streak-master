@@ -416,9 +416,9 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
     <div class="sf-wrap">
       <button class="btn-primary" style="margin-bottom:16px;" onclick="openSfidaModal()">+ NUOVA SFIDA</button>
       <div class="sf-sec">ATTIVE</div>
-      <div id="sfide-attive"><div style="color:var(--muted);font-size:12px;padding:10px 0;">Nessuna sfida attiva</div></div>
+      <div id="sfide-attive"><div style="text-align:center;padding:30px 16px;color:var(--muted);"><div style="font-size:44px;margin-bottom:10px;opacity:0.6;">🎯</div><div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Ancora nessuna sfida</div><div style="font-size:12px;">Sfida un amico e batti la sua streak!</div></div></div>
       <div class="sf-sec">COMPLETATE</div>
-      <div id="sfide-completate"><div style="color:var(--muted);font-size:12px;padding:10px 0;">Nessuna sfida completata</div></div>
+      <div id="sfide-completate"><div style="text-align:center;padding:20px 16px;color:var(--muted);font-size:12px;">Le sfide concluse appariranno qui 🏆</div></div>
     </div>
   </div>
 
@@ -485,7 +485,7 @@ nav { position:fixed;bottom:0;left:0;right:0;background:rgba(8,11,26,0.97);backd
       <div class="badges-grid" id="prof-badges"></div>
 
       <button class="btn-primary" style="margin-top:14px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#080b1a;box-shadow:0 4px 20px rgba(245,166,35,0.4);" onclick="switchPage('pricing',null)">👑 DIVENTA PREMIUM</button>
-      <button id="notif-btn" onclick="toggleNotifications()" style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;letter-spacing:1px;">🔕 Attiva Notifiche</button>
+      <button id="notif-btn" onclick="toggleNotifications()" style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;letter-spacing:1px;">🔔 Attiva Notifiche</button>
       <button class="btn-logout" onclick="logout()">⬅ ESCI</button>
     </div>
   </div>
@@ -1409,10 +1409,10 @@ async function loadSfide(){
     const comp=sfide.filter(s=>s.status!=='pending');
     document.getElementById('sfide-attive').innerHTML=attive.length?
       attive.map(s=>`<div class="sf-card"><div class="sf-vs">🎮 VS ${s.opponentUsername}</div><div class="sf-detail">Tu: ${s.createdByPlayer?.name||'?'}${s.message?` · "${s.message}"`:''}</div><div class="sf-foot"><span class="sf-status s-act">⏳ IN ATTESA</span></div></div>`).join(''):
-      '<div style="color:var(--muted);font-size:12px;padding:10px 0;">Nessuna sfida attiva</div>';
+      '<div style="text-align:center;padding:30px 16px;color:var(--muted);"><div style="font-size:44px;margin-bottom:10px;opacity:0.6;">🎯</div><div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Ancora nessuna sfida</div><div style="font-size:12px;">Sfida un amico e batti la sua streak!</div></div>';
     document.getElementById('sfide-completate').innerHTML=comp.length?
       comp.map(s=>`<div class="sf-card"><div class="sf-vs">VS ${s.opponentUsername}</div><div class="sf-detail">${s.createdByPlayer?.name||'?'}</div><div class="sf-foot"><span class="sf-status ${s.result==='win'?'s-win':'s-loss'}">${s.result==='win'?'✓ VINTO':'✗ PERSO'}</span></div></div>`).join(''):
-      '<div style="color:var(--muted);font-size:12px;padding:10px 0;">Nessuna sfida completata</div>';
+      '<div style="text-align:center;padding:20px 16px;color:var(--muted);font-size:12px;">Le sfide concluse appariranno qui 🏆</div>';
   }catch(e){console.error(e);}
 }
 
@@ -1835,7 +1835,7 @@ function updateNotifButton() {
     btn.style.borderColor = 'var(--lime)';
     btn.style.color = 'var(--lime)';
   } else {
-    btn.innerHTML = '🔕 Attiva Notifiche';
+    btn.innerHTML = '🔔 Attiva Notifiche';
     btn.style.background = 'rgba(255,255,255,0.06)';
     btn.style.borderColor = 'var(--border)';
     btn.style.color = 'var(--text)';

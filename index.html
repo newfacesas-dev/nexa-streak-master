@@ -837,15 +837,17 @@ function updateUI() {
 function checkTodayPick() {
   const today = new Date().toDateString();
   const wrap = document.getElementById('pick-done-wrap');
-  if (userData.lastPickDate === today && userData.lastPickPlayer) {
-    selectedPlayer = userData.lastPickPlayer;
+  const picks = (userData.todayPicksDate === today && Array.isArray(userData.todayPicks)) ? userData.todayPicks : [];
+  if (picks.length > 0) {
     updateBanner();
+    const sub = picks.length === 1
+      ? `${picks[0].name} · In attesa del risultato`
+      : `🎯 ${picks.length} pick di oggi · In attesa dei risultati`;
     wrap.innerHTML = `<div class="pick-done-banner" style="margin:12px 16px 0;">
       <div class="pick-done-title">✓ PICK DI OGGI</div>
-      <div class="pick-done-sub">${userData.lastPickPlayer.name} · In attesa del risultato</div>
+      <div class="pick-done-sub">${sub}</div>
       <button onclick="verifyPick()" style="margin-top:8px;background:var(--purple);border:none;color:white;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">🔍 VERIFICA RISULTATO</button>
     </div>`;
-    // Verifica automatica ogni 3 minuti se c'è un pick attivo
     if (!window.verifyInterval) {
       window.verifyInterval = setInterval(verifyPick, 180000);
     }
